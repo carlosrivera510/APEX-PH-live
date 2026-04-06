@@ -854,7 +854,8 @@ async function showStockPage(ticker) {
   document.getElementById('sp-discord').href = `https://discord.com/channels/758311970948120596/1487357901789073428?msg=${discordMsg}`;
 
   try {
-    const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}.PS?interval=1d&range=3mo`);
+    const yfUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}.PS?interval=1d&range=3mo`;
+    const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(yfUrl)}`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     const result = json?.chart?.result?.[0];
@@ -978,7 +979,7 @@ async function showStockPage(ticker) {
 
   } catch (err) {
     console.error('[APEX PH] Yahoo Finance error:', err);
-    body.innerHTML = `<div class="sp-error">Failed to fetch data for <strong>${ticker}.PS</strong>.<br><br>CORS or network error. Yahoo Finance may be blocked from browser.<br><br>Try searching in the local database using the CMD bar.</div>`;
+    body.innerHTML = `<div class="sp-error">No live data available for <strong>${ticker}.PS</strong>.<br><br>This may happen if the ticker isn't traded on PSE, or Yahoo Finance is temporarily unavailable.<br><br>Try a different ticker (e.g. SM, ALI, BDO, JFC, TEL, GLO, CEB) or use the CMD bar to search.</div>`;
   }
 }
 
