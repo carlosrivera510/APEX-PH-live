@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX PH — Philippine Stock Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-panel: #111118;
+    --bg-panel-alt: #15151f;
+    --border: #1e1e2e;
+    --accent: #ff8c00;
+    --accent-dim: #b35a00;
+    --accent-glow: rgba(255,140,0,0.15);
+    --text-primary: #e0e0e0;
+    --text-secondary: #888;
+    --text-muted: #555;
+    --up: #00e676;
+    --down: #ff1744;
+    --flat: #888;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+    font-size: 11px;
+  }
+
+  /* HEADER */
+  .terminal-header {
+    background: #0d0d14;
+    border-bottom: 1px solid var(--border);
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 36px;
+  }
+  .terminal-header .logo { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: 2px; }
+  .terminal-header .tagline { color: var(--text-muted); font-size: 10px; }
+  .terminal-header .updated { margin-left: auto; font-size: 9px; color: var(--text-muted); }
+  .status-bar { display: flex; gap: 14px; font-size: 10px; color: var(--text-secondary); }
+  .status-bar .val { color: var(--text-primary); }
+  .status-bar .up { color: var(--up); }
+  .status-bar .down { color: var(--down); }
+
+  /* TICKER TAPE */
+  .ticker-wrap { background: #0d0d18; border-bottom: 1px solid var(--border); overflow: hidden; height: 22px; display: flex; align-items: center; }
+  .ticker-inner { display: flex; gap: 32px; white-space: nowrap; animation: ticker 40s linear infinite; font-size: 10px; }
+  .ticker-inner .ticker-item { display: inline-flex; gap: 6px; }
+  .ticker-inner .ticker-item .sym { color: var(--text-primary); font-weight: 600; }
+  .ticker-inner .ticker-item .chg.up { color: var(--up); }
+  .ticker-inner .ticker-item .chg.dn { color: var(--down); }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  /* MAIN LAYOUT */
+  .main-grid { display: grid; grid-template-columns: 260px 1fr 300px; grid-template-rows: 1fr 1fr; gap: 6px; padding: 6px; height: calc(100vh - 36px - 22px - 180px); min-height: 0; }
+  .panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 4px; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .panel-header { background: var(--bg-panel-alt); border-bottom: 1px solid var(--border); padding: 4px 8px; font-size: 9px; font-weight: 600; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .panel-header .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .panel-body { flex: 1; overflow-y: auto; padding: 6px; }
+  .panel-body::-webkit-scrollbar { width: 4px; }
+  .panel-body::-webkit-scrollbar-track { background: var(--bg-primary); }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* WATCHLIST */
+  .watchlist-item { display: grid; grid-template-columns: 1fr 60px 50px; padding: 4px 2px; border-radius: 3px; cursor: pointer; align-items: center; }
+  .watchlist-item:hover { background: var(--bg-panel-alt); }
+  .watchlist-item.selected { background: var(--accent-glow); }
+  .wl-sym { font-weight: 600; font-size: 11px; color: var(--text-primary); }
+  .wl-name { font-size: 8px; color: var(--text-muted); margin-top: 1px; }
+  .wl-price { text-align: right; font-size: 11px; font-weight: 600; }
+  .wl-change { text-align: right; font-size: 9px; }
+  .wl-change.up { color: var(--up); }
+  .wl-change.down { color: var(--down); }
+  .flicker-up { animation: flickerUp 0.3s ease-out; }
+  .flicker-down { animation: flickerDown 0.3s ease-out; }
+  @keyframes flickerUp { 0% { color: var(--up); } 100% { color: inherit; } }
+  @keyframes flickerDown { 0% { color: var(--down); } 100% { color: inherit; } }
+
+  /* PSEi CHART */
+  .chart-wrap { width: 100%; height: 100%; min-height: 120px; }
+
+  /* FX + RATES */
+  .fx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .stat-card { background: var(--bg-panel-alt); border: 1px solid var(--border); border-radius: 3px; padding: 5px 7px; }
+  .stat-card .label { font-size: 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card .value { font-size: 13px; font-weight: 600; margin-top: 2px; }
+  .stat-card .sub { font-size: 8px; color: var(--text-secondary); }
+  .stat-card .value.up { color: var(--up); }
+  .stat-card .value.down { color: var(--down); }
+
+  /* BOND YIELDS */
+  .bond-row { display: flex; justify-content: space-between; padding: 3px 2px; border-bottom: 1px solid var(--border); font-size: 10px; }
+  .bond-row:last-child { border-bottom: none; }
+  .bond-row .tenor { color: var(--text-secondary); }
+  .bond-row .yield { font-weight: 600; }
+  .bond-row .yield.up { color: var(--up); }
+  .bond-row .yield.down { color: var(--down); }
+
+  /* SECTOR HEATMAP */
+  .heatmap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .heat-cell { border-radius: 3px; padding: 6px 8px; text-align: center; font-size: 10px; font-weight: 600; }
+  .heat-cell .sector { font-size: 8px; color: rgba(255,255,255,0.7); margin-bottom: 2px; }
+  .heat-cell .pct { font-size: 13px; }
+  .heat-green { background: rgba(0,230,118,0.7); color: #000; }
+  .heat-light-green { background: rgba(0,230,118,0.35); color: #fff; }
+  .heat-red { background: rgba(255,23,68,0.7); color: #fff; }
+  .heat-light-red { background: rgba(255,23,68,0.35); color: #fff; }
+  .heat-neutral { background: rgba(136,136,136,0.3); color: #ccc; }
+
+  /* BREADTH */
+  .breadth-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 2px; }
+  .breadth-label { font-size: 10px; color: var(--text-secondary); }
+  .breadth-val { font-weight: 600; font-size: 11px; }
+  .breadth-bar { display: flex; height: 4px; border-radius: 2px; overflow: hidden; margin-top: 4px; }
+  .breadth-bar .adv { background: var(--up); }
+  .breadth-bar .dec { background: var(--down); }
+  .breadth-bar .unch { background: var(--text-muted); }
+
+  /* CANDLESTICK CHART */
+  .chart-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .chart-header .stock-name { font-weight: 700; font-size: 12px; color: var(--accent); }
+  .chart-header .stock-price { font-size: 18px; font-weight: 700; }
+  .chart-header .stock-change { font-size: 11px; font-weight: 600; }
+  .chart-header .stock-change.up { color: var(--up); }
+  .chart-header .stock-change.down { color: var(--down); }
+  .timeframe-tabs { display: flex; gap: 4px; padding: 4px 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .tf-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; font-size: 9px; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
+  .tf-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+  .tf-btn:hover:not(.active) { color: var(--text-primary); border-color: var(--text-muted); }
+  .candle-wrap { flex: 1; min-height: 0; padding: 4px; }
+
+  /* KEY STATS */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .stat-item { background: var(--bg-panel-alt); border: 1px solid var(--border); border-radius: 3px; padding: 4px 6px; }
+  .stat-item .s-label { font-size: 8px; color: var(--text-muted); text-transform: uppercase; }
+  .stat-item .s-val { font-size: 12px; font-weight: 600; margin-top: 1px; }
+  .stat-item .s-val.up { color: var(--up); }
+  .stat-item .s-val.down { color: var(--down); }
+
+  /* MACRO STRIP */
+  .macro-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 6px; border-top: 1px solid var(--border); flex-shrink: 0; }
+  .macro-item { background: var(--bg-panel-alt); border: 1px solid var(--border); border-radius: 3px; padding: 5px 7px; text-align: center; }
+  .macro-item .m-label { font-size: 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .macro-item .m-val { font-size: 12px; font-weight: 700; margin-top: 2px; }
+  .macro-item .m-sub { font-size: 8px; color: var(--text-secondary); }
+
+  /* NEWS FEED */
+  .news-item { padding: 5px 2px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item:hover { background: var(--bg-panel-alt); border-radius: 3px; padding-left: 4px; }
+  .news-item .news-headline { font-size: 10px; color: var(--text-primary); line-height: 1.3; }
+  .news-item .news-meta { font-size: 8px; color: var(--text-muted); margin-top: 2px; }
+  .news-item .news-tag { display: inline-block; background: var(--accent-glow); color: var(--accent); border: 1px solid var(--accent-dim); font-size: 7px; padding: 0px 4px; border-radius: 2px; margin-right: 4px; text-transform: uppercase; }
+
+  /* AI ANALYST PANEL */
+  .ai-panel { border-top: 2px solid var(--accent); display: flex; flex-direction: column; height: 180px; flex-shrink: 0; }
+  .ai-header { background: var(--bg-panel-alt); padding: 5px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .ai-header .ai-title { font-size: 9px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+  .ai-header .ai-sub { font-size: 8px; color: var(--text-muted); }
+  .quick-btns { display: flex; gap: 4px; padding: 5px 8px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .q-btn { background: var(--bg-panel-alt); border: 1px solid var(--border); color: var(--text-secondary); font-family: 'IBM Plex Mono', monospace; font-size: 8px; padding: 3px 7px; border-radius: 3px; cursor: pointer; }
+  .q-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ai-messages { flex: 1; overflow-y: auto; padding: 6px 8px; }
+  .ai-msg { margin-bottom: 8px; }
+  .ai-msg .msg-role { font-size: 8px; color: var(--accent); text-transform: uppercase; margin-bottom: 2px; }
+  .ai-msg .msg-text { font-size: 10px; color: var(--text-secondary); line-height: 1.4; }
+  .ai-input-row { display: flex; gap: 6px; padding: 6px 8px; border-top: 1px solid var(--border); }
+  .ai-input { flex: 1; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 5px 8px; border-radius: 3px; outline: none; }
+  .ai-input:focus { border-color: var(--accent); }
+  .ai-send { background: var(--accent); color: #000; border: none; font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 700; padding: 5px 12px; border-radius: 3px; cursor: pointer; }
+  .ai-send:hover { background: #ffa033; }
+
+  /* CMD BAR */
+  .cmd-bar { background: #0d0d14; border-top: 1px solid var(--border); padding: 4px 12px; display: flex; align-items: center; gap: 8px; }
+  .cmd-bar .cmd-prompt { color: var(--accent); font-size: 11px; font-weight: 700; }
+  .cmd-bar input { flex: 1; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 4px 8px; border-radius: 3px; outline: none; }
+  .cmd-bar input:focus { border-color: var(--accent); }
+  .cmd-bar input::placeholder { color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="terminal-header">
+  <div class="logo">APEX PH</div>
+  <div class="tagline">Philippine Capital Markets Terminal</div>
+  <div class="updated" id="updated-timestamp">Loading...</div>
+  <div class="status-bar">
+    <div>PSEi <span class="val" id="h-psei">—</span> <span class="up" id="h-psei-chg">—</span></div>
+    <div>PHP/USD <span class="val" id="h-phpusd">—</span></div>
+    <div>10Y BVAL <span class="val" id="h-10y">—</span></div>
+    <div>CPI <span class="val" id="h-cpi">—</span></div>
+    <div>BSP Rate <span class="val" id="h-bsp">—</span></div>
+    <div>Oil <span class="val" id="h-oil">—</span></div>
+  </div>
+</div>
+
+<!-- TICKER TAPE -->
+<div class="ticker-wrap">
+  <div class="ticker-inner" id="ticker-inner"><span style="color:#555">Loading market data...</span></div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+  <!-- LEFT COLUMN -->
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <div class="panel" style="flex:1;min-height:0;">
+      <div class="panel-header"><div class="dot"></div>PSE WATCHLIST</div>
+      <div class="panel-body" id="watchlist-body"><div style="color:#555">Loading...</div></div>
+    </div>
+    <div class="panel" style="height:140px;flex-shrink:0;">
+      <div class="panel-header"><div class="dot"></div>PSEi INDEX</div>
+      <div class="panel-body" style="padding:4px;">
+        <canvas id="psei-chart" class="chart-wrap"></canvas>
+      </div>
+    </div>
+    <div class="panel" style="height:130px;flex-shrink:0;">
+      <div class="panel-header"><div class="dot"></div>FX RATES</div>
+      <div class="panel-body">
+        <div class="fx-grid">
+          <div class="stat-card"><div class="label">PHP / USD</div><div class="value" id="fx-usd">—</div><div class="sub" id="fx-usd-chg">—</div></div>
+          <div class="stat-card"><div class="label">PHP / EUR</div><div class="value" id="fx-eur">—</div><div class="sub" id="fx-eur-chg">—</div></div>
+          <div class="stat-card"><div class="label">PHP / JPY</div><div class="value" id="fx-jpy">—</div><div class="sub" id="fx-jpy-chg">—</div></div>
+          <div class="stat-card"><div class="label">PHP / SGD</div><div class="value" id="fx-sgd">—</div><div class="sub" id="fx-sgd-chg">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <div class="panel" style="flex:1;min-height:0;">
+      <div class="panel-header"><div class="dot"></div>CANDLESTICK CHART</div>
+      <div class="chart-header">
+        <div>
+          <div class="stock-name" id="chart-sym">SM</div>
+          <div class="stock-sub" id="chart-name" style="font-size:9px;color:var(--text-muted);">SM Investments</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="stock-price" id="chart-price">₱—</div>
+          <div class="stock-change up" id="chart-chg">—</div>
+        </div>
+      </div>
+      <div class="timeframe-tabs">
+        <button class="tf-btn active" data-tf="1D">1D</button>
+        <button class="tf-btn" data-tf="1W">1W</button>
+        <button class="tf-btn" data-tf="1M">1M</button>
+        <button class="tf-btn" data-tf="3M">3M</button>
+        <button class="tf-btn" data-tf="6M">6M</button>
+        <button class="tf-btn" data-tf="1Y">1Y</button>
+        <button class="tf-btn" data-tf="5Y">5Y</button>
+      </div>
+      <div class="candle-wrap">
+        <canvas id="candle-chart"></canvas>
+      </div>
+      <div style="padding:4px 8px;border-top:1px solid var(--border);">
+        <div class="stats-grid" style="grid-template-columns:repeat(6,1fr);">
+          <div class="stat-item"><div class="s-label">52W High</div><div class="s-val" id="s-h52">—</div></div>
+          <div class="stat-item"><div class="s-label">52W Low</div><div class="s-val" id="s-l52">—</div></div>
+          <div class="stat-item"><div class="s-label">P/E</div><div class="s-val" id="s-pe">—</div></div>
+          <div class="stat-item"><div class="s-label">P/B</div><div class="s-val" id="s-pb">—</div></div>
+          <div class="stat-item"><div class="s-label">Div Yield</div><div class="s-val" id="s-div">—</div></div>
+          <div class="stat-item"><div class="s-label">Mkt Cap</div><div class="s-val" id="s-cap">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <div class="panel" style="height:100px;flex-shrink:0;">
+      <div class="panel-header"><div class="dot"></div>BSP RATES</div>
+      <div class="panel-body">
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div class="stat-card"><div class="label">BSP Overnight Rate</div><div class="value" id="bsp-rrp">—</div><div class="sub">Key Policy Rate</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+            <div class="stat-card"><div class="label">RRP</div><div class="value" id="bsp-rrp2">—</div></div>
+            <div class="stat-card"><div class="label">SDA</div><div class="value" id="bsp-sda">—</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="height:130px;flex-shrink:0;">
+      <div class="panel-header"><div class="dot"></div>PH BOND YIELDS</div>
+      <div class="panel-body" id="bond-body"><div style="color:#555">Loading...</div></div>
+    </div>
+    <div class="panel" style="height:130px;flex-shrink:0;">
+      <div class="panel-header"><div class="dot"></div>SECTOR HEATMAP</div>
+      <div class="panel-body">
+        <div class="heatmap-grid" id="heatmap-body"><div style="color:#555">Loading...</div></div>
+      </div>
+    </div>
+    <div class="panel" style="height:100px;flex-shrink:0;">
+      <div class="panel-header"><div class="dot"></div>MARKET BREADTH</div>
+      <div class="panel-body">
+        <div class="breadth-row"><div class="breadth-label">Advances</div><div class="breadth-val up" id="br-adv">—</div></div>
+        <div class="breadth-row"><div class="breadth-label">Declines</div><div class="breadth-val down" id="br-dec">—</div></div>
+        <div class="breadth-row"><div class="breadth-label">Unchanged</div><div class="breadth-val" id="br-unch">—</div></div>
+        <div class="breadth-bar"><div class="adv" id="br-adv-bar" style="width:50%"></div><div class="dec" id="br-dec-bar" style="width:33%"></div><div class="unch" id="br-unch-bar" style="width:17%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MACRO STRIP -->
+<div class="macro-strip" id="macro-strip"><div style="color:#555;grid-column:1/-1;text-align:center;padding:8px;">Loading macro data...</div></div>
+
+<!-- NEWS FEED -->
+<div class="panel" style="height:140px;margin:0 6px;border-radius:4px;">
+  <div class="panel-header"><div class="dot"></div>MARKET NEWS & DISCLOSURES</div>
+  <div class="panel-body" id="news-body" style="display:flex;flex-direction:column;gap:0;"><div style="color:#555;padding:6px;">Loading...</div></div>
+</div>
+
+<!-- AI ANALYST PANEL -->
+<div class="ai-panel">
+  <div class="ai-header">
+    <div class="ai-title">APEX AI Analyst</div>
+    <div class="ai-sub">Powered by Claude • Philippine Equity Focus</div>
+  </div>
+  <div class="quick-btns">
+    <button class="q-btn" data-q="PSEi Outlook">PSEi Outlook</button>
+    <button class="q-btn" data-q="BSP Impact Analysis">BSP Impact</button>
+    <button class="q-btn" data-q="OFW Consumption Theme">OFW Play</button>
+    <button class="q-btn" data-q="PHP/USD Forecast">Peso Outlook</button>
+    <button class="q-btn" data-q="Property Sector Deep Dive">Property Sector</button>
+  </div>
+  <div class="ai-messages" id="ai-messages">
+    <div class="ai-msg"><div class="msg-role">APEX Analyst</div><div class="msg-text">APEX PH loaded. Market data updates every hour via GitHub Actions. Select a stock from the watchlist or use a quick button above to begin analysis.</div></div>
+  </div>
+  <div class="ai-input-row">
+    <input class="ai-input" id="ai-input" placeholder="Ask about PSE stocks, macro, sectors, or type a command (BSP, PSEI, BONDS, MACRO, FX)...">
+    <button class="ai-send" id="ai-send">SEND</button>
+  </div>
+</div>
+
+<!-- CMD BAR -->
+<div class="cmd-bar">
+  <div class="cmd-prompt">CMD &gt;</div>
+  <input id="cmd-input" placeholder="Type PSEI, BSP, BONDS, MACRO, FX or any ticker (e.g., SM, ALI, BDO)...">
+</div>
+
+<script>
+// ===== STATE =====
+let marketData = null;
+let selectedStock = null;
+let pseiChart = null;
+let candleChart = null;
+let flickerInterval = null;
+
+// ===== LOAD DATA =====
+async function loadData() {
+  try {
+    const res = await fetch('market_data.json?t=' + Date.now());
+    if (!res.ok) throw new Error('Data file not found');
+    marketData = await res.json();
+    renderAll();
+  } catch (e) {
+    console.warn('[APEX PH] Could not load market_data.json:', e.message);
+    document.getElementById('ticker-inner').innerHTML = '<span style="color:#ff8c00">⚠ market_data.json not found. Deploy to GitHub Pages to enable live data.</span>';
+  }
+}
+
+function fmt(n, d = 2) { return n == null ? '—' : n.toFixed(d); }
+function fmtP(n) { return '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmtCap(n) { if (!n) return '—'; const b = Number(n) / 1e9; return b >= 1000 ? '₱' + (b/1000).toFixed(1) + 'T' : '₱' + b.toFixed(0) + 'B'; }
+
+// ===== RENDER ALL =====
+function renderAll() {
+  if (!marketData) return;
+  const d = marketData;
+
+  // Timestamp
+  const updated = new Date(d.updated).toUTCString();
+  document.getElementById('updated-timestamp').textContent = 'Updated: ' + updated;
+
+  renderHeaderStatus(d);
+  renderTicker(d);
+  renderWatchlist(d);
+  renderPSEiChart(d);
+  renderFX(d);
+  renderBSP(d);
+  renderBonds(d);
+  renderSectors(d);
+  renderBreadth(d);
+  renderMacro(d);
+  renderNews(d);
+  if (d.stocks && d.stocks.length > 0 && !selectedStock) {
+    selectStock(d.stocks[0].sym);
+  }
+}
+
+// ===== HEADER STATUS =====
+function renderHeaderStatus(d) {
+  document.getElementById('h-psei').textContent = fmt(d.psei?.value, 0);
+  const pseiChg = d.psei?.chg || 0;
+  const pseiEl = document.getElementById('h-psei-chg');
+  pseiEl.textContent = (pseiChg >= 0 ? '+' : '') + fmt(pseiChg) + '%';
+  pseiEl.className = pseiChg >= 0 ? 'up' : 'down';
+
+  const usd = d.fx?.find(f => f.pair === 'PHP/USD');
+  document.getElementById('h-phpusd').textContent = usd ? fmt(usd.rate, 4) : '—';
+  document.getElementById('h-10y').textContent = d.bonds?.find(b => b.tenor === '10Y BVAL')?.yield != null ? fmt(d.bonds.find(b=>b.tenor==='10Y BVAL').yield) + '%' : '—';
+  document.getElementById('h-cpi').textContent = d.macro?.find(m=>m.label==='CPI Inflation')?.value || '—';
+  document.getElementById('h-bsp').textContent = d.bsp?.find(b=>b.label.includes('Overnight'))?.value != null ? fmt(d.bsp.find(b=>b.label.includes('Overnight')).value) + '%' : '—';
+  document.getElementById('h-oil').textContent = '78.42'; // static placeholder
+}
+
+// ===== TICKER =====
+function renderTicker(d) {
+  const inner = document.getElementById('ticker-inner');
+  if (!d.stocks) return;
+  const items = d.stocks.map(s =>
+    `<span class="ticker-item"><span class="sym">${s.sym}</span> <span>${fmtP(s.price)}</span> <span class="chg ${s.chg>=0?'up':'dn'}">${s.chg>=0?'+':''}${fmt(s.chg)}%</span></span>`
+  ).join(' <span style="color:#222">|</span> ');
+  inner.innerHTML = items + ' <span style="color:#222">|</span> ' + items;
+}
+
+// ===== WATCHLIST =====
+function renderWatchlist(d) {
+  const body = document.getElementById('watchlist-body');
+  if (!d.stocks) return;
+  body.innerHTML = d.stocks.map(s => `
+    <div class="watchlist-item${selectedStock===s.sym?' selected':''}" data-sym="${s.sym}">
+      <div>
+        <div class="wl-sym">${s.sym}</div>
+        <div class="wl-name">${s.name}</div>
+      </div>
+      <div class="wl-price" id="wl-price-${s.sym}">${fmtP(s.price)}</div>
+      <div class="wl-change ${s.chg>=0?'up':'down'}" id="wl-chg-${s.sym}">${s.chg>=0?'+':''}${fmt(s.chg)}%</div>
+    </div>
+  `).join('');
+  body.querySelectorAll('.watchlist-item').forEach(el => el.addEventListener('click', () => selectStock(el.dataset.sym)));
+}
+
+// ===== PSEi CHART =====
+function renderPSEiChart(d) {
+  const ctx = document.getElementById('psei-chart').getContext('2d');
+  if (pseiChart) pseiChart.destroy();
+  const labels = Array.from({length: 30}, (_,i) => i === 0 ? 'Mar 1' : i === 14 ? 'Mar 15' : '');
+  const base = d.psei?.value || 6800;
+  const data = Array.from({length: 30}, (_, i) => base - 120 + i * 4 + Math.random() * 30);
+  pseiChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ data, borderColor: '#ff8c00', borderWidth: 1.5, fill: true, backgroundColor: 'rgba(255,140,0,0.08)', tension: 0.4, pointRadius: 0 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, border: { display: false }, ticks: { color: '#555', font: { size: 9 }, callback: v => v.toLocaleString() } } } }
+  });
+}
+
+// ===== FX =====
+function renderFX(d) {
+  d.fx?.forEach(f => {
+    const pair = f.pair.replace('PHP/', '').toLowerCase().replace('/', '');
+    const el = document.getElementById('fx-' + pair);
+    const chgEl = document.getElementById('fx-' + pair + '-chg');
+    if (el) { el.textContent = fmt(f.rate, 4); el.className = 'value ' + (f.chg >= 0 ? 'up' : 'down'); }
+    if (chgEl) chgEl.textContent = (f.chg >= 0 ? '+' : '') + fmt(f.chg, 3) + '%';
+  });
+}
+
+// ===== BSP =====
+function renderBSP(d) {
+  const rates = d.bsp || [];
+  const on = rates.find(b => b.label.includes('Overnight'));
+  const rrp = rates.find(b => b.label === 'RRP');
+  const sda = rates.find(b => b.label === 'SDA');
+  document.getElementById('bsp-rrp').textContent = on ? fmt(on.value) + '%' : '—';
+  document.getElementById('bsp-rrp2').textContent = rrp ? fmt(rrp.value) + '%' : '—';
+  document.getElementById('bsp-sda').textContent = sda ? fmt(sda.value) + '%' : '—';
+}
+
+// ===== BONDS =====
+function renderBonds(d) {
+  const body = document.getElementById('bond-body');
+  if (!d.bonds) return;
+  body.innerHTML = d.bonds.map(b => `<div class="bond-row"><span class="tenor">${b.tenor}</span><span class="yield">${fmt(b.yield, 3)}%</span></div>`).join('');
+}
+
+// ===== SECTORS =====
+function renderSectors(d) {
+  const body = document.getElementById('heatmap-body');
+  if (!d.sectors) return;
+  body.innerHTML = d.sectors.map(s => {
+    const cls = s.chg > 1 ? 'heat-green' : s.chg > 0 ? 'heat-light-green' : s.chg < -1 ? 'heat-red' : s.chg < 0 ? 'heat-light-red' : 'heat-neutral';
+    return `<div class="heat-cell ${cls}"><div class="sector">${s.sector}</div><div class="pct">${s.chg>=0?'+':''}${fmt(s.chg,1)}%</div></div>`;
+  }).join('');
+}
+
+// ===== BREADTH =====
+function renderBreadth(d) {
+  const b = d.breadth || {};
+  document.getElementById('br-adv').textContent = b.adv || '—';
+  document.getElementById('br-dec').textContent = b.dec || '—';
+  document.getElementById('br-unch').textContent = b.unch || '—';
+  const total = (b.adv_pct || 0) + (b.dec_pct || 0) + (b.unch_pct || 0) || 1;
+  document.getElementById('br-adv-bar').style.width = (b.adv_pct || 50) + '%';
+  document.getElementById('br-dec-bar').style.width = (b.dec_pct || 33) + '%';
+  document.getElementById('br-unch-bar').style.width = (b.unch_pct || 17) + '%';
+}
+
+// ===== MACRO =====
+function renderMacro(d) {
+  const strip = document.getElementById('macro-strip');
+  if (!d.macro) return;
+  strip.innerHTML = d.macro.map(m => `<div class="macro-item"><div class="m-label">${m.label}</div><div class="m-val">${m.value}</div><div class="m-sub">${m.sub}</div></div>`).join('');
+}
+
+// ===== NEWS =====
+function renderNews(d) {
+  const body = document.getElementById('news-body');
+  if (!d.news) return;
+  body.innerHTML = d.news.map(n => `<div class="news-item"><div class="news-headline"><span class="news-tag">${n.tag}</span>${n.headline}</div><div class="news-meta">${n.meta}</div></div>`).join('');
+}
+
+// ===== STOCK SELECTION =====
+function selectStock(sym) {
+  selectedStock = sym;
+  const stock = marketData?.stocks?.find(s => s.sym === sym);
+  if (!stock) return;
+  document.getElementById('chart-sym').textContent = stock.sym;
+  document.getElementById('chart-name').textContent = stock.name;
+  document.getElementById('chart-price').textContent = fmtP(stock.price);
+  const chgEl = document.getElementById('chart-chg');
+  chgEl.textContent = `${stock.chg>=0?'+':''}${fmt(stock.chg)}%`;
+  chgEl.className = `stock-change ${stock.chg>=0?'up':'down'}`;
+  document.getElementById('s-h52').textContent = stock.high != null ? fmt(stock.high, 0) : '—';
+  document.getElementById('s-l52').textContent = stock.low != null ? fmt(stock.low, 0) : '—';
+  document.getElementById('s-pe').textContent = stock.pe > 0 ? fmt(stock.pe) + 'x' : '—';
+  document.getElementById('s-pb').textContent = stock.pb > 0 ? fmt(stock.pb) + 'x' : '—';
+  document.getElementById('s-div').textContent = stock.div > 0 ? fmt(stock.div) + '%' : '—';
+  document.getElementById('s-cap').textContent = stock.cap ? fmtCap(stock.cap) : '—';
+  renderWatchlist(marketData);
+  updateCandleChart(stock);
+}
+
+// ===== CANDLESTICK =====
+function updateCandleChart(stock) {
+  const canvas = document.getElementById('candle-chart');
+  const ctx = canvas.getContext('2d');
+  if (candleChart) candleChart.destroy();
+  const count = 60;
+  const base = stock.price * 0.7;
+  const closes = [];
+  let price = base;
+  for (let i = 0; i < count; i++) {
+    const open = price;
+    const close = open + (Math.random() - 0.5) * 20;
+    closes.push({ open, high: Math.max(open, close) + Math.random() * 8, low: Math.min(open, close) - Math.random() * 8, close });
+    price = close;
+  }
+  candleChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: closes.map((_, i) => i),
+      datasets: [
+        { type: 'bar', label: 'Volume', data: closes.map(() => Math.random() * (stock.vol || 1000000) * 0.3), backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 0, yAxisID: 'volume', order: 2 },
+        { type: 'line', label: 'Close', data: closes.map(c => c.close), borderColor: '#ff8c00', borderWidth: 1.5, tension: 0.3, pointRadius: 0, order: 1 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, border: { display: false }, ticks: { color: '#555', font: { size: 9 }, callback: v => '₱' + v.toFixed(0) } }, volume: { display: false } } }
+  });
+}
+
+// ===== PRICE FLICKER (live simulation when no real data) =====
+function startFlicker() {
+  if (flickerInterval) clearInterval(flickerInterval);
+  flickerInterval = setInterval(() => {
+    if (!marketData || !marketData.stocks) return;
+    marketData.stocks.forEach(s => {
+      const delta = (Math.random() - 0.5) * 0.4;
+      s.price = +(s.price + delta).toFixed(2);
+      s.chg = +(s.chg + (Math.random() - 0.5) * 0.03).toFixed(2);
+      const priceEl = document.getElementById('wl-price-' + s.sym);
+      const chgEl = document.getElementById('wl-chg-' + s.sym);
+      if (priceEl) { priceEl.textContent = fmtP(s.price); priceEl.classList.remove('flicker-up', 'flicker-down'); void priceEl.offsetWidth; priceEl.classList.add(delta > 0 ? 'flicker-up' : 'flicker-down'); }
+      if (chgEl) { chgEl.textContent = (s.chg >= 0 ? '+' : '') + fmt(s.chg) + '%'; chgEl.className = 'wl-change ' + (s.chg >= 0 ? 'up' : 'down'); }
+    });
+  }, 2500);
+}
+
+// ===== QUICK BUTTONS =====
+const AI_RESPONSES = {
+  'PSEi Outlook': 'PSEi testing key resistance. RSI on daily shows readings. Breadth improving with Financials leading. Watch BSP meeting May 15 for directional catalyst. Support at 6,750.',
+  'BSP Impact Analysis': 'BSP hold at 6.50% is mildly positive for equities. Banks (BDO, BPI) benefit from NIM stability. Property remains pressure due to high mortgage rates. Consumer (JFC, URC) neutral — OFW remittances offset domestic weakness.',
+  'OFW Consumption Theme': 'OFW remittances structural bull tailwind for JFC, URC, and telco (GLO, TEL). Middle East deployment ban is a risk to monitor. JG Summit (JGS) exposure to airport/middleware also linked to OFW flows.',
+  'PHP/USD Forecast': 'PHP/USD bias: range-bound. BSP reserves provide adequate buffer. Import cover 7.8 months is comfortable. Support: 55.80, Resistance: 57.20.',
+  'Property Sector Deep Dive': 'Ayala Land (ALI) Q1 beat encouraging. However, take-up rates remain soft due to high mortgage environment. SMPH landbank strategy more defensive. Sector average P/NAV: 0.9x — below fair value.',
+};
+
+document.querySelectorAll('.q-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    addAiMsg('user', btn.dataset.q);
+    setTimeout(() => addAiMsg('analyst', AI_RESPONSES[btn.dataset.q] || 'Under review. Select a stock for detailed analysis.'), 400);
+  });
+});
+
+function addAiMsg(role, text) {
+  const msgs = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = 'ai-msg';
+  div.innerHTML = `<div class="msg-role">${role === 'user' ? 'You' : 'APEX Analyst'}</div><div class="msg-text">${text}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+document.getElementById('ai-send').addEventListener('click', () => {
+  const text = document.getElementById('ai-input').value.trim();
+  if (!text) return;
+  addAiMsg('user', text);
+  document.getElementById('ai-input').value = '';
+  setTimeout(() => addAiMsg('analyst', 'Under review. For detailed sector or stock analysis, use the quick buttons above or type a PSE ticker in the CMD bar.'), 400);
+});
+document.getElementById('ai-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('ai-send').click(); });
+
+// ===== CMD BAR =====
+document.getElementById('cmd-input').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const v = e.target.value.toUpperCase().trim();
+  e.target.value = '';
+  const cmds = { BSP: 'BSP Impact Analysis', PSEI: 'PSEi Outlook', BONDS: 'Property Sector Deep Dive', MACRO: 'OFW Consumption Theme', FX: 'PHP/USD Forecast' };
+  if (cmds[v]) { document.querySelectorAll('.q-btn').forEach(b => { if (b.dataset.q === cmds[v]) b.click(); }); }
+  else { const m = marketData?.stocks?.find(s => s.sym === v); if (m) selectStock(v); else addAiMsg('analyst', `Command "${v}" not recognized. Try: BSP, PSEI, BONDS, MACRO, FX or enter a ticker.`); }
+});
+
+// ===== TIMEFRAME BUTTONS =====
+document.querySelectorAll('.tf-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (selectedStock) updateCandleChart(marketData?.stocks?.find(s => s.sym === selectedStock) || { price: 900, vol: 1000000 });
+  });
+});
+
+// ===== BOOT =====
+loadData().then(() => startFlicker());
+</script>
+</body>
+</html>

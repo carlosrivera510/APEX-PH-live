@@ -1,0 +1,36 @@
+name: Hourly APEX PH Data Update
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # every hour at :00
+  workflow_dispatch:          # manual trigger from GitHub UI
+  push:
+    branches: [main]
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install yfinance
+        run: pip install yfinance --quiet
+
+      - name: Fetch market data
+        run: python3 scripts/fetch_data.py
+        env:
+          PYTHONIOENCODING: utf-8
+
+      - name: Commit & push data
+        run: |
+          git config user.name "APEX PH Bot"
+          git config user.email "apex-ph[bot]@users.noreply.github.com"
+          git add market_data.json
+          git diff --staged --quiet || git commit -m "chore: update market data $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
