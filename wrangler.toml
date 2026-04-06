@@ -1,6 +1,0 @@
-name = "apex-ph-live"
-compatibility_date = "2024-04-06"
-
-[[pages_functions]]
-directory = "_functions"
-binding = "KV"
