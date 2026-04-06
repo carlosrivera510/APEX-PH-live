@@ -855,7 +855,7 @@ async function showStockPage(ticker) {
 
   try {
     const yfUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}.PS?interval=1d&range=3mo`;
-    const res = await fetch(`https://apex-ph-live.cjcr01.workers.dev/api/proxy?url=${encodeURIComponent(yfUrl)}`);
+    const res = await fetch(`https://apex-ph-proxy.cjcr01.workers.dev?url=${encodeURIComponent(yfUrl)}`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     const result = json?.chart?.result?.[0];
