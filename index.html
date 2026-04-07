@@ -192,7 +192,7 @@ let selStock = null;
 let candleChart = null;
 let spChart = null;
 
-function fmtP(n){return"&#8369;"+Number(n).toLocaleString("en-PH",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtP(n){return"₱"+Number(n).toLocaleString("en-PH",{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtK(n){if(!n)return"—";return(Number(n)/1000).toFixed(0)+"K";}
 function hmcls(c){if(c>1)return"hm-grn";if(c>0)return"hm-lgrn";if(c<-1)return"hm-red";if(c<0)return"hm-lred";return"hm-ntrl";}
 function asyncGet(url){return fetch(url).then(r=>r.json()).catch(()=>null);}
@@ -266,6 +266,7 @@ function selChart(sym){
   if(!s)return;
   selStock=s;
   document.getElementById("ch-sym").textContent=s.sym;
+  document.getElementById("ch-name").textContent=s.name;
   const pel=document.getElementById("ch-price");
   pel.textContent=s.price?fmtP(s.price):"—";
   pel.className="sprice "+(s.chg>=0?"up":"dn");
