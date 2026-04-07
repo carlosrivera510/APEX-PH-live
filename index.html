@@ -9,7 +9,10 @@
 <style>
 :root{--bg:#0a0a0f;--panel:#111118;--panel-alt:#15151f;--border:#1e1e2e;--accent:#ff8c00;--accent-dim:#b35a00;--accent-glow:rgba(255,140,0,0.15);--text:#e0e0e0;--text-sec:#888;--text-muted:#555;--up:#00e676;--down:#ff1744}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;font-size:11px}
+html,body{height:100%;overflow:hidden;font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text);font-size:11px}
+@media(max-width:600px){
+html,body{overflow-y:auto;height:auto}
+}
 .header{background:#0d0d14;border-bottom:1px solid var(--border);padding:6px 12px;display:flex;align-items:center;gap:12px;height:36px}
 .logo{color:var(--accent);font-weight:700;font-size:13px;letter-spacing:2px}
 .tagline{color:var(--text-muted);font-size:10px}
@@ -25,6 +28,29 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .ticker .chg.up{color:var(--up)}.ticker .chg.dn{color:var(--down)}
 @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .main-grid{display:grid;grid-template-columns:240px 1fr 280px;grid-template-rows:1fr 1fr;gap:6px;padding:6px;height:calc(100vh - 36px - 22px - 200px);min-height:0}
+@media(max-width:600px){
+/* Entire page scrolls on mobile */
+html,body{overflow-y:auto!important;height:auto!important}
+/* Full-width single column */
+.main-grid{grid-template-columns:1fr!important;grid-template-rows:auto!important;height:auto!important;gap:6px;padding:6px}
+/* Left column: watchlist panel scrolls internally */
+.main-grid>div:first-child>.panel{flex:none!important;height:320px!important;min-height:200px!important}
+.main-grid>div:first-child .panel-body{max-height:320px!important;min-height:200px!important}
+/* Middle column: chart panel gets space */
+.main-grid>div:nth-child(2)>.panel{height:auto!important;min-height:300px!important}
+.main-grid>div:nth-child(2) .candle-wrap{min-height:150px!important}
+/* All panels natural height */
+.panel{height:auto!important;min-height:auto!important}
+.wl-grid{grid-template-columns:1fr 1fr}
+/* Header wraps and shrinks */
+.header{flex-wrap:wrap;gap:6px;height:auto;padding:6px}
+.logo{font-size:12px}.status-bar{gap:8px;font-size:9px}
+.search-bar input{width:90px;font-size:9px}
+.cmd-bar input{font-size:10px}
+.ai-panel{height:150px!important;flex-shrink:0!important;margin:0 6px 6px}
+.macro-strip{grid-template-columns:1fr 1fr}
+.ticker-wrap{display:none}
+}
 .panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;display:flex;flex-direction:column;min-height:0;overflow:hidden;flex-shrink:0}
 .panel-hdr{background:var(--panel-alt);border-bottom:1px solid var(--border);padding:4px 8px;font-size:9px;font-weight:600;color:var(--accent);letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:6px;flex-shrink:0}
 .panel-hdr .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
@@ -122,20 +148,22 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .ai-panel{height:160px}
 }
 @media(max-width:600px){
-.main-grid{grid-template-columns:1fr;grid-template-rows:auto;height:auto}
-.main-grid>div:first-child>.panel{flex:none;height:320px}  /* fixed height so it scrolls */
-.main-grid>div:first-child .panel-body{max-height:320px}
-.panel{height:auto;min-height:140px}
+html,body{overflow-y:auto!important;height:auto!important}
+.main-grid{grid-template-columns:1fr!important;grid-template-rows:auto!important;height:auto!important;gap:6px;padding:6px}
+.main-grid>div:first-child>.panel{flex:none!important;height:320px!important;min-height:200px!important}
+.main-grid>div:first-child .panel-body{max-height:320px!important;min-height:200px!important}
+.main-grid>div:nth-child(2)>.panel{height:auto!important;min-height:300px!important;flex:none!important}
+.main-grid>div:nth-child(2) .candle-wrap{min-height:150px!important}
+.panel{height:auto!important}
 .wl-grid{grid-template-columns:1fr 1fr}
 .header{flex-wrap:wrap;gap:6px;height:auto;padding:6px}
-.logo{font-size:12px}
-.status-bar{font-size:9px}
+.logo{font-size:12px}.status-bar{gap:8px;font-size:9px}
 .search-bar input{width:90px;font-size:9px}
 .cmd-bar input{font-size:10px}
-.ai-panel{height:150px}
+.ai-panel{height:150px!important;flex-shrink:0!important;margin:0 6px 6px}
 .macro-strip{grid-template-columns:1fr 1fr}
-.ticker-wrap{display:none}  /* hide ticker on small mobile - too cramped */
-}}
+.ticker-wrap{display:none}
+}
 </style>
 </head>
 <body>
