@@ -253,6 +253,33 @@ async function av(ticker, type="quote") {
   return asyncGet(`${PROXY}/api/proxy?ticker=${ticker}&type=${type}`);
 }
 
+async function fetchFX() {
+  try {
+    // Free FX data from exchangerate.host
+    const r = await fetch("https://open.er-api.com/v6/latest/USD");
+    const d = await r.json();
+    const rates = d.rates || {};
+    const phpUSD = rates.PHP ? (1/rates.PHP).toFixed(4) : null;
+    const phpEUR = rates.PHP && rates.EUR ? (rates.EUR/rates.PHP).toFixed(4) : null;
+    const phpJPY = rates.PHP && rates.JPY ? (rates.JPY/rates.PHP).toFixed(4) : null;
+    const phpSGD = rates.PHP && rates.SGD ? (rates.SGD/rates.PHP).toFixed(4) : null;
+    if (phpUSD) {
+      document.getElementById("fx-usd").textContent = phpUSD;
+      document.getElementById("fx-eur").textContent = phpEUR || "—";
+      document.getElementById("fx-jpy").textContent = phpJPY || "—";
+      document.getElementById("fx-sgd").textContent = phpSGD || "—";
+      document.getElementById("fx-usd-chg").textContent = "USD/PHP";
+      document.getElementById("fx-eur-chg").textContent = "EUR/PHP";
+      document.getElementById("fx-jpy-chg").textContent = "JPY/PHP";
+      document.getElementById("fx-sgd-chg").textContent = "SGD/PHP";
+    }
+  } catch(e) {
+    // Fallback static rates
+    document.getElementById("fx-usd").textContent = "56.82";
+    document.getElementById("fx-usd-chg").textContent = "BSP reference";
+  }
+}
+
 async function loadAll() {
   // Show seed data immediately
   mktData.stocks = STOCKS.map(s => ({
@@ -309,6 +336,7 @@ async function av(ticker,type="quote"){
 
 function renderAll(){
   renderWatchlist();renderTicker();renderBonds();renderHeatmap();renderBreadth();renderMacro();renderNews();renderKeyStocks();
+  fetchFX();
   if(!selStock && mktData.stocks[0]) selChart(mktData.stocks[0].sym);
 }
 
