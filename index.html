@@ -113,6 +113,8 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 /* ── Mobile Responsive ───────────────────────────────── */
 @media(max-width:900px){
 .main-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:4px}
+.main-grid>div:first-child .panel:first-child{height:220px}
+.main-grid>div:first-child .panel:first-child .panel-body{max-height:220px}
 .panel{height:180px}
 .cmd-bar input{font-size:10px}
 .status-bar{gap:8px;font-size:9px}.logo{font-size:11px}.tagline{display:none}
@@ -120,7 +122,9 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .ai-panel{height:160px}
 }
 @media(max-width:600px){
-.main-grid{grid-template-columns:1fr;grid-template-rows:auto}
+.main-grid{grid-template-columns:1fr;grid-template-rows:auto;height:auto}
+.main-grid>div:first-child>.panel{flex:none;height:320px}  /* fixed height so it scrolls */
+.main-grid>div:first-child .panel-body{max-height:320px}
 .panel{height:auto;min-height:140px}
 .wl-grid{grid-template-columns:1fr 1fr}
 .header{flex-wrap:wrap;gap:6px;height:auto;padding:6px}
@@ -144,7 +148,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 <div class="ticker-wrap"><div class="ticker" id="ticker"><span style="color:#555">Loading market data...</span></div></div>
 <div class="main-grid">
   <div style="display:flex;flex-direction:column;gap:6px">
-    <div class="panel" style="flex:1;min-height:0"><div class="panel-hdr"><div class="dot"></div>PSE WATCHLIST</div><div class="panel-body" id="wl-body"></div></div>
+    <div class="panel" style="flex:1;min-height:0"><div class="panel-hdr"><div class="dot"></div>PSE WATCHLIST</div><div class="panel-body" id="wl-body" style="overflow-y:auto;flex:1;min-height:0"></div></div>
     <div class="panel" style="height:130px;flex-shrink:0"><div class="panel-hdr"><div class="dot"></div>FX RATES</div><div class="panel-body"><div class="fx-grid"><div class="card"><div class="lbl">PHP/USD</div><div class="val" id="fx-usd">—</div><div class="sub" id="fx-usd-chg">—</div></div><div class="card"><div class="lbl">PHP/EUR</div><div class="val" id="fx-eur">—</div><div class="sub" id="fx-eur-chg">—</div></div><div class="card"><div class="lbl">PHP/JPY</div><div class="val" id="fx-jpy">—</div><div class="sub" id="fx-jpy-chg">—</div></div><div class="card"><div class="lbl">PHP/SGD</div><div class="val" id="fx-sgd">—</div><div class="sub" id="fx-sgd-chg">—</div></div></div></div></div>
     <div class="panel" style="height:120px;flex-shrink:0"><div class="panel-hdr"><div class="dot"></div>MARKET BREADTH</div><div class="panel-body"><div class="bread-row"><div class="lbl">Advances</div><div class="v up" id="br-adv">—</div></div><div class="bread-row"><div class="lbl">Declines</div><div class="v dn" id="br-dec">—</div></div><div class="bread-row"><div class="lbl">Unchanged</div><div class="v" id="br-unch">—</div></div><div class="bread-bar"><div class="adv" id="br-adv-bar" style="width:50%"></div><div class="dec" id="br-dec-bar" style="width:33%"></div><div class="unch" id="br-unch-bar" style="width:17%"></div></div></div></div>
   </div>
