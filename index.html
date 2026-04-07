@@ -202,9 +202,12 @@ async function av(ticker,type="quote"){
 }
 
 async function loadAll(){
-  // Load main stocks
-  const promises = STOCKS.map(s=>av(s.sym));
-  const results = await Promise.all(promises);
+  // Load main stocks sequentially to avoid rate limit
+  const results = [];
+  for (const s of STOCKS) {
+    await new Promise(r => setTimeout(r, 1200)); // 1.2s delay between calls
+    results.push(await av(s.sym));
+  }
   mktData.stocks = STOCKS.map((s,i)=>{
     const q=results[i]?.["Global Quote"]||{};
     const price=parseFloat(q["05. price"])||s.seed||0;
@@ -212,9 +215,12 @@ async function loadAll(){
     const chg=chgStr?parseFloat(chgStr.replace("%","")):0;
     return{sym:s.sym,name:s.name,price,chg,open:parseFloat(q["02. open"])||"",high:parseFloat(q["03. high"])||"",low:parseFloat(q["04. low"])||"",vol:q["06. volume"]||"",prev:parseFloat(q["08. previous close"])||""};
   });
-  // Load key stocks
-  const kp = KEYSTOCKS.map(s=>av(s.sym));
-  const kr = await Promise.all(kp);
+  // Load key stocks sequentially
+  const kr = [];
+  for (const s of KEYSTOCKS) {
+    await new Promise(r => setTimeout(r, 1200));
+    kr.push(await av(s.sym));
+  }
   mktData.keyStocks = KEYSTOCKS.map((s,i)=>{const q=kr[i]?.["Global Quote"]||{};return{sym:s.sym,name:s.name,price:parseFloat(q["05. price"])||0,chg:q["10. change percent"]?parseFloat(q["10. change percent"].replace("%","")):0};});
   renderAll();
   startFlicker();
