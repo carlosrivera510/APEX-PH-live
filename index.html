@@ -197,33 +197,77 @@ function fmtK(n){if(!n)return"—";return(Number(n)/1000).toFixed(0)+"K";}
 function hmcls(c){if(c>1)return"hm-grn";if(c>0)return"hm-lgrn";if(c<-1)return"hm-red";if(c<0)return"hm-lred";return"hm-ntrl";}
 function asyncGet(url){return fetch(url).then(r=>r.json()).catch(()=>null);}
 
-async function av(ticker,type="quote"){
+// ── Alpha Vantage queue (5 calls/min free tier — 13s delay between calls) ──
+const AV_QUEUE = [];
+let AV_BUSY = false;
+const AV_DELAY = 13000;
+
+function schedAV(ticker, cb) {
+  AV_QUEUE.push({ ticker, cb });
+  processAV();
+}
+
+async function processAV() {
+  if (AV_BUSY || AV_QUEUE.length === 0) return;
+  AV_BUSY = true;
+  const { ticker, cb } = AV_QUEUE.shift();
+  try {
+    const data = await asyncGet(`${PROXY}/api/proxy?ticker=${ticker}&type=quote`);
+    cb(data);
+  } catch(e) { console.warn("AV err", ticker, e); }
+  await new Promise(r => setTimeout(r, AV_DELAY));
+  AV_BUSY = false;
+  processAV();
+}
+
+async function av(ticker, type="quote") {
   return asyncGet(`${PROXY}/api/proxy?ticker=${ticker}&type=${type}`);
 }
 
-async function loadAll(){
-  // Load main stocks sequentially to avoid rate limit
-  const results = [];
-  for (const s of STOCKS) {
-    await new Promise(r => setTimeout(r, 1200)); // 1.2s delay between calls
-    results.push(await av(s.sym));
-  }
-  mktData.stocks = STOCKS.map((s,i)=>{
-    const q=results[i]?.["Global Quote"]||{};
-    const price=parseFloat(q["05. price"])||s.seed||0;
-    const chgStr=q["10. change percent"]||"";
-    const chg=chgStr?parseFloat(chgStr.replace("%","")):0;
-    return{sym:s.sym,name:s.name,price,chg,open:parseFloat(q["02. open"])||"",high:parseFloat(q["03. high"])||"",low:parseFloat(q["04. low"])||"",vol:q["06. volume"]||"",prev:parseFloat(q["08. previous close"])||""};
-  });
-  // Load key stocks sequentially
-  const kr = [];
-  for (const s of KEYSTOCKS) {
-    await new Promise(r => setTimeout(r, 1200));
-    kr.push(await av(s.sym));
-  }
-  mktData.keyStocks = KEYSTOCKS.map((s,i)=>{const q=kr[i]?.["Global Quote"]||{};return{sym:s.sym,name:s.name,price:parseFloat(q["05. price"])||0,chg:q["10. change percent"]?parseFloat(q["10. change percent"].replace("%","")):0};});
+async function loadAll() {
+  // Show seed data immediately
+  mktData.stocks = STOCKS.map(s => ({
+    sym:s.sym, name:s.name,
+    price:s.seed||0, chg:0,
+    open:"",high:"",low:"",vol:"",prev:"",
+    pe:"",pb:"",mcap:"",div:""
+  }));
+  mktData.keyStocks = KEYSTOCKS.map(s=>({sym:s.sym,name:s.name,price:0,chg:0}));
   renderAll();
   startFlicker();
+  // Queue real data from Alpha Vantage (one call per 13s to stay under rate limit)
+  STOCKS.forEach(s => schedAV(s.sym, data => {
+    const q = data?.["Global Quote"] || {};
+    const price = parseFloat(q["05. price"]) || 0;
+    if (!price) return;
+    const chg = q["10. change percent"] ? parseFloat(q["10. change percent"].replace("%","")) : 0;
+    const idx = mktData.stocks.findIndex(x=>x.sym===s.sym);
+    if (idx>=0) {
+      mktData.stocks[idx] = {...mktData.stocks[idx],
+        price, chg,
+        open: parseFloat(q["02. open"])||"",
+        high: parseFloat(q["03. high"])||"",
+        low:  parseFloat(q["04. low"])||"",
+        vol:  q["06. volume"]||"",
+        prev: parseFloat(q["08. previous close"])||""
+      };
+      renderWatchlist();
+    }
+  }));
+  KEYSTOCKS.forEach(s => schedAV(s.sym, data => {
+    const q = data?.["Global Quote"]||{};
+    const price = parseFloat(q["05. price"])||0;
+    if (!price) return;
+    const chg = q["10. change percent"] ? parseFloat(q["10. change percent"].replace("%","")) : 0;
+    const idx = mktData.keyStocks.findIndex(x=>x.sym===s.sym);
+    if (idx>=0) mktData.keyStocks[idx] = {...mktData.keyStocks[idx], price, chg};
+    renderKeyStocks();
+  }));
+}
+
+// ── Alpha Vantage (search/overlay only) ───────────────────────────────────
+async function av(ticker,type="quote"){
+  return asyncGet(`${PROXY}/api/proxy?ticker=${ticker}&type=${type}`);
 }
 
 function renderAll(){
