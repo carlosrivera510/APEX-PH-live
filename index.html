@@ -221,27 +221,31 @@ html,body{overflow-y:auto!important;height:auto!important}
 const PROXY = "https://apex-ph-proxy.cjcr01.workers.dev";
 
 // ── Realistic PSE stock seed prices (demo data — used until live data loads) ──
+// ── APEX PH Watchlist (seeded from last PSE Edge live scrape 2026-04-10) ────────
+// Source: edge.pse.com.ph — all tickers verified against live prices.
+// On page load, these prices are displayed immediately and replaced with
+// live data from /?type=bulk once the proxy API responds.
 const STOCKS = [
-  {sym:"SM",   name:"SM Investments Corp",          seed:975.89, chg: 0.45, seedVol:1300493},
-  {sym:"ALI",  name:"Ayala Land Inc",              seed: 39.18, chg: 0.38, seedVol:2672231},
-  {sym:"BDO",  name:"BDO Unibank Inc",             seed:171.59, chg:-0.65, seedVol:3765162},
-  {sym:"JFC",  name:"Jollibee Foods Corp",          seed:285.36, chg:-0.31, seedVol:1075732},
-  {sym:"TEL",  name:"PLDT Inc",                   seed:1680.58, chg: 1.17, seedVol: 331304},
-  {sym:"MER",  name:"Meralco",                     seed:424.24, chg:-0.87, seedVol:3679979},
-  {sym:"AC",   name:"Ayala Corp",                  seed:780.41, chg:-0.06, seedVol:1729583},
-  {sym:"BPI",  name:"Bank of the Philippine Islands",seed:117.98,chg: 1.16, seedVol: 245729},
-  {sym:"URC",  name:"Universal Robina Corp",       seed:148.89, chg:-0.22, seedVol:4745042},
-  {sym:"SMPH", name:"San Miguel Corp",             seed: 22.24, chg: 1.37, seedVol:5114201},
-  {sym:"GLO",  name:"Globe Telecom Inc",           seed:2420.94,chg: 1.28, seedVol:2702001},
-  {sym:"ICT",  name:"AyalaLand Logistics REIT",    seed: 33.80, chg: 0.54, seedVol: 894231},
-  {sym:"CEB",  name:"Cebu Air Inc",                seed: 31.55, chg: 2.10, seedVol:1823441},
-  {sym:"2GO",  name:"2GO Group Inc",               seed: 17.55, chg:-0.42, seedVol: 432188},
-  {sym:"DMC",  name:"DMCI Holdings Inc",           seed:  8.20, chg: 0.73, seedVol:2133441},
-  {sym:"SCC",  name:"Semirara Mining & Power",     seed: 18.40, chg:-1.20, seedVol:3421998},
-  {sym:"MONDE",name:"Monde Nissin Corp",           seed:  8.70, chg: 0.23, seedVol:5122344},
-  {sym:"CNVRG",name:"Converge ICT Solutions",      seed: 13.60, chg: 0.88, seedVol:1823991},
-  {sym:"DDMPR",name:"DDMP REIT Corp",              seed: 14.20, chg:-0.14, seedVol: 521833},
-  {sym:"PLUS", name:"DigiPlus Corp",               seed: 31.80, chg: 3.45, seedVol:8944331},
+  {sym:"SM",    name:"SM Investments Corp",          seed:621.00, chg: -0.4, seedVol:421660},
+  {sym:"ALI",   name:"Ayala Land Inc",               seed: 18.08, chg: -1.74,seedVol:22797200},
+  {sym:"BDO",   name:"BDO Unibank Inc",              seed:122.80, chg: -0.24,seedVol:3322590},
+  {sym:"JFC",   name:"Jollibee Foods Corp",           seed:169.50, chg: -1.74,seedVol:2083130},
+  {sym:"TEL",   name:"PLDT Inc",                     seed:1300.00,chg:  0.78,seedVol: null},
+  {sym:"MER",   name:"Meralco",                      seed:608.50, chg: -0.33,seedVol: null},
+  {sym:"AC",    name:"Ayala Corp",                   seed:543.00, chg:  0.46,seedVol: null},
+  {sym:"BPI",   name:"Bank of the Philippine Islands",seed:101.40, chg: -2.59,seedVol: null},
+  {sym:"URC",   name:"Universal Robina Corp",         seed: 62.00, chg: -0.8, seedVol: null},
+  {sym:"SMPH",  name:"SM Prime Holdings Inc",         seed: 20.40, chg: -2.86,seedVol: null},
+  {sym:"GLO",   name:"Globe Telecom Inc",             seed:1650.00,chg: -0.06,seedVol: 27790},
+  {sym:"ICT",   name:"International Container Terminal",seed:720.00,chg:  3.0, seedVol: null},
+  {sym:"CEB",   name:"Cebu Air Inc",                 seed: 33.50, chg:  5.18,seedVol: 607100},
+  {sym:"2GO",   name:"2GO Group Inc",                seed:  1.70, chg:  null,seedVol: null},
+  {sym:"DMC",   name:"DMCI Holdings Inc",            seed: 10.22, chg:   0.2,seedVol: null},
+  {sym:"SCC",   name:"Semirara Mining & Power",      seed: 30.05, chg:  0.17,seedVol: null},
+  {sym:"MONDE", name:"Monde Nissin Corp",            seed:  6.67, chg: -0.45,seedVol: null},
+  {sym:"CNVRG", name:"Converge ICT Solutions",        seed: 12.50, chg:  1.3, seedVol: null},
+  {sym:"DDMPR", name:"DDMP REIT Corp",               seed:  1.06, chg:  0.95,seedVol: null},
+  {sym:"PLUS",  name:"DigiPlus Corp",                seed: 16.80, chg: -0.94,seedVol: null},
 ];
 const KEYSTOCKS = [
   {sym:"CEB",name:"Cebu Air"},{sym:"PLUS",name:"DigiPlus"},
@@ -251,9 +255,10 @@ const BONDS = [
   {t:"91D T-Bill",y:"5.95"},{t:"182D T-Bill",y:"6.10"},{t:"364D T-Bill",y:"6.28"},
   {t:"2Y BVAL",y:"6.42"},{t:"5Y BVAL",y:"6.65"},{t:"10Y BVAL",y:"6.80"},{t:"25Y BVAL",y:"7.15"},
 ];
+// Source: edge.pse.com.ph index data — 2026-04-10 live
 const SECTS = [
-  {n:"Financials",c:1.8},{n:"Property",c:0.9},{n:"Holding Firms",c:-0.4},
-  {n:"Services",c:-0.7},{n:"Industrial",c:0.3},{n:"Mining & Oil",c:0.1},
+  {n:"Financials",c:-0.09},{n:"Property",c:-1.41},{n:"Holding Firms",c:-0.39},
+  {n:"Services",c: 1.97},{n:"Industrial",c:-0.64},{n:"Mining & Oil",c: 1.72},
 ];
 
 let mktData = {stocks:[],keyStocks:[]};
