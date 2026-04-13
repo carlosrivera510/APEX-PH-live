@@ -281,11 +281,11 @@ async function fetchFX() {
     const d = await r.json();
     const rates = d.rates || {};
       const phpUSD = rates.PHP ? rates.PHP.toFixed(4) : null;
-      const phpEUR = rates.PHP && rates.EUR ? (rates.EUR/rates.PHP).toFixed(4) : null;
-      const phpJPY = rates.PHP && rates.JPY ? (rates.JPY/rates.PHP).toFixed(4) : null;
-      const phpSGD = rates.PHP && rates.SGD ? (rates.SGD/rates.PHP).toFixed(4) : null;
-      const phpGBP = rates.PHP && rates.GBP ? (rates.GBP/rates.PHP).toFixed(4) : null;
-      const phpCNY = rates.PHP && rates.CNY ? (rates.CNY/rates.PHP).toFixed(4) : null;
+      const phpEUR = rates.PHP && rates.EUR ? (rates.PHP / rates.EUR).toFixed(4) : null;
+      const phpJPY = rates.PHP && rates.JPY ? (rates.PHP / rates.JPY).toFixed(4) : null;
+      const phpSGD = rates.PHP && rates.SGD ? (rates.PHP / rates.SGD).toFixed(4) : null;
+      const phpGBP = rates.PHP && rates.GBP ? (rates.PHP / rates.GBP).toFixed(4) : null;
+      const phpCNY = rates.PHP && rates.CNY ? (rates.PHP / rates.CNY).toFixed(4) : null;
     if (phpUSD) {
       document.getElementById("fx-usd").textContent = phpUSD;
       document.getElementById("fx-eur").textContent = phpEUR || "—";
@@ -302,18 +302,18 @@ async function fetchFX() {
     }
   } catch(e) {
     // Fallback static rates
-    document.getElementById("fx-usd").textContent = "56.82";
-    document.getElementById("fx-eur").textContent = "62.15";
-    document.getElementById("fx-jpy").textContent = "0.38";
-    document.getElementById("fx-sgd").textContent = "42.80";
-    document.getElementById("fx-gbp").textContent = "73.20";
-    document.getElementById("fx-cny").textContent = "7.82";
-    document.getElementById("fx-usd-chg").textContent = "BSP reference";
-    document.getElementById("fx-eur-chg").textContent = "BSP reference";
-    document.getElementById("fx-jpy-chg").textContent = "BSP reference";
-    document.getElementById("fx-sgd-chg").textContent = "BSP reference";
-    document.getElementById("fx-gbp-chg").textContent = "BSP reference";
-    document.getElementById("fx-cny-chg").textContent = "BSP reference";
+    document.getElementById("fx-usd").textContent = "59.92";
+    document.getElementById("fx-eur").textContent = "69.99";
+    document.getElementById("fx-jpy").textContent = "0.3753";
+    document.getElementById("fx-sgd").textContent = "46.93";
+    document.getElementById("fx-gbp").textContent = "80.34";
+    document.getElementById("fx-cny").textContent = "8.76";
+    document.getElementById("fx-usd-chg").textContent = "1 USD = PHP";
+    document.getElementById("fx-eur-chg").textContent = "1 EUR = PHP";
+    document.getElementById("fx-jpy-chg").textContent = "1 JPY = PHP";
+    document.getElementById("fx-sgd-chg").textContent = "1 SGD = PHP";
+    document.getElementById("fx-gbp-chg").textContent = "1 GBP = PHP";
+    document.getElementById("fx-cny-chg").textContent = "1 CNY = PHP";
   }
 }
 

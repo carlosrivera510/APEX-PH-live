@@ -70,7 +70,7 @@ html,body{overflow-y:auto!important;height:auto!important}
 .card{background:var(--panel-alt);border:1px solid var(--border);border-radius:3px;padding:5px 7px}
 .card .lbl{font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
 .card .val{font-size:13px;font-weight:600;margin-top:2px}.card .val.up{color:var(--up)}.card .val.dn{color:var(--down)}.card .sub{font-size:8px;color:var(--text-sec)}
-.fx-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.fx-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
 .bond-row{display:flex;justify-content:space-between;padding:3px 2px;border-bottom:1px solid var(--border);font-size:10px}
 .bond-row:last-child{border-bottom:none}.bond-row .t{color:var(--text-sec)}.bond-row .y{font-weight:600}
 .hm-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
@@ -171,13 +171,15 @@ html,body{overflow-y:auto!important;height:auto!important}
   <div class="logo">APEX PH</div>
   <div class="tagline">Philippine Capital Markets</div>
   <div class="search-bar"><input id="srch" placeholder="Ticker (e.g. GLO, ALI)"><button onclick="doSearch()">SEARCH</button></div>
-  <div class="status-bar"><div>PSEi <span class="v" id="h-psi">—</span></div><div>PHP/USD <span class="v" id="h-phpx">—</span></div><div>BSP <span class="v">6.50%</span></div><div id="data-badge" style="color:#ff8c00;font-size:9px;border:1px solid #ff8c00;padding:1px 5px;border-radius:3px">DEMO</div></div>
+  <div class="status-bar"><div>PSEi <span class="v" id="h-psi">—</span></div><div>USD/PHP <span class="v" id="h-phpx">—</span></div><div>BSP <span class="v">6.50%</span></div><div id="data-badge" style="color:#ff8c00;font-size:9px;border:1px solid #ff8c00;padding:1px 5px;border-radius:3px">DEMO</div></div>
 </div>
 <div class="ticker-wrap"><div class="ticker" id="ticker"><span style="color:#555">Loading market data...</span></div></div>
 <div class="main-grid">
   <div style="display:flex;flex-direction:column;gap:6px">
     <div class="panel" style="flex:1;min-height:200px;display:flex;flex-direction:column"><div class="panel-hdr"><div class="dot"></div>PSE WATCHLIST</div><div class="panel-body" id="wl-body" style="overflow-y:auto;flex:1;min-height:0px"></div></div>
-    <div class="panel" style="height:130px;flex-shrink:0"><div class="panel-hdr"><div class="dot"></div>FX RATES</div><div class="panel-body"><div class="fx-grid"><div class="card"><div class="lbl">PHP/USD</div><div class="val" id="fx-usd">—</div><div class="sub" id="fx-usd-chg">—</div></div><div class="card"><div class="lbl">PHP/EUR</div><div class="val" id="fx-eur">—</div><div class="sub" id="fx-eur-chg">—</div></div><div class="card"><div class="lbl">PHP/JPY</div><div class="val" id="fx-jpy">—</div><div class="sub" id="fx-jpy-chg">—</div></div><div class="card"><div class="lbl">PHP/SGD</div><div class="val" id="fx-sgd">—</div><div class="sub" id="fx-sgd-chg">—</div></div></div></div></div>
+    <div class="panel" style="height:130px;flex-shrink:0"><div class="panel-hdr"><div class="dot"></div>FX RATES</div><div class="panel-body"><div class="fx-grid"><div class="card"><div class="lbl">USD/PHP</div><div class="val" id="fx-usd">—</div><div class="sub" id="fx-usd-chg">—</div></div><div class="card"><div class="lbl">EUR/PHP</div><div class="val" id="fx-eur">—</div><div class="sub" id="fx-eur-chg">—</div></div><div class="card"><div class="lbl">JPY/PHP</div><div class="val" id="fx-jpy">—</div><div class="sub" id="fx-jpy-chg">—</div></div><div class="card"><div class="lbl">SGD/PHP</div><div class="val" id="fx-sgd">—</div><div class="sub" id="fx-sgd-chg">—</div></div>
+<div class="card"><div class="lbl">GBP/PHP</div><div class="val" id="fx-gbp">—</div><div class="sub" id="fx-gbp-chg">—</div></div>
+<div class="card"><div class="lbl">CNY/PHP</div><div class="val" id="fx-cny">—</div><div class="sub" id="fx-cny-chg">—</div></div></div></div>
     <div class="panel" style="height:120px;flex-shrink:0"><div class="panel-hdr"><div class="dot"></div>MARKET BREADTH</div><div class="panel-body"><div class="bread-row"><div class="lbl">Advances</div><div class="v up" id="br-adv">—</div></div><div class="bread-row"><div class="lbl">Declines</div><div class="v dn" id="br-dec">—</div></div><div class="bread-row"><div class="lbl">Unchanged</div><div class="v" id="br-unch">—</div></div><div class="bread-bar"><div class="adv" id="br-adv-bar" style="width:50%"></div><div class="dec" id="br-dec-bar" style="width:33%"></div><div class="unch" id="br-unch-bar" style="width:17%"></div></div></div></div>
   </div>
   <div style="display:flex;flex-direction:column;gap:6px">
@@ -200,7 +202,7 @@ html,body{overflow-y:auto!important;height:auto!important}
 <div class="panel" style="height:130px;margin:0 6px;border-radius:4px"><div class="panel-hdr"><div class="dot"></div>LATEST PSE DISCLOSURES</div><div class="panel-body" id="news-body" style="display:flex;flex-direction:column"></div></div>
 <div class="ai-panel">
   <div class="ai-hdr"><div class="ai-title">APEX AI Analyst</div><div class="ai-sub">Powered by Athena</div></div>
-  <div class="quick-btns"><button class="qbtn" data-q="PSEi technical outlook">PSEi Outlook</button><button class="qbtn" data-q="BSP rate impact on Philippine equities">BSP Impact</button><button class="qbtn" data-q="OFW remittances play on PSE stocks">OFW Play</button><button class="qbtn" data-q="PHP/USD forecast">Peso Outlook</button><button class="qbtn" data-q="Property sector deep dive">Property Sector</button></div>
+  <div class="quick-btns"><button class="qbtn" data-q="PSEi technical outlook">PSEi Outlook</button><button class="qbtn" data-q="BSP rate impact on Philippine equities">BSP Impact</button><button class="qbtn" data-q="OFW remittances play on PSE stocks">OFW Play</button><button class="qbtn" data-q="USD/PHP forecast">Peso Outlook</button><button class="qbtn" data-q="Property sector deep dive">Property Sector</button></div>
   <div class="ai-msgs" id="ai-msgs"><div class="ai-msg"><div class="role">APEX Analyst</div><div class="text">APEX PH is live — demo data for demonstration purposes. Stock prices shown are illustrative. Use the quick buttons below or type a command in the bar below. Try PSEI, FX, or BSP.</div></div></div>
   <div class="ai-input-row"><input class="ai-input" id="ai-input" placeholder="Ask about PSE stocks, macro, sectors..."><button class="ai-send" id="ai-send">SEND</button></div>
 </div>
@@ -278,24 +280,40 @@ async function fetchFX() {
     const r = await fetch("https://open.er-api.com/v6/latest/USD");
     const d = await r.json();
     const rates = d.rates || {};
-    const phpUSD = rates.PHP ? (1/rates.PHP).toFixed(4) : null;
-    const phpEUR = rates.PHP && rates.EUR ? (rates.EUR/rates.PHP).toFixed(4) : null;
-    const phpJPY = rates.PHP && rates.JPY ? (rates.JPY/rates.PHP).toFixed(4) : null;
-    const phpSGD = rates.PHP && rates.SGD ? (rates.SGD/rates.PHP).toFixed(4) : null;
+    const phpUSD = rates.PHP ? rates.PHP.toFixed(4) : null;
+    const phpEUR = rates.PHP && rates.EUR ? (rates.PHP / rates.EUR).toFixed(4) : null;
+    const phpJPY = rates.PHP && rates.JPY ? (rates.PHP / rates.JPY).toFixed(4) : null;
+    const phpSGD = rates.PHP && rates.SGD ? (rates.PHP / rates.SGD).toFixed(4) : null;
+    const phpGBP = rates.PHP && rates.GBP ? (rates.PHP / rates.GBP).toFixed(4) : null;
+    const phpCNY = rates.PHP && rates.CNY ? (rates.PHP / rates.CNY).toFixed(4) : null;
     if (phpUSD) {
       document.getElementById("fx-usd").textContent = phpUSD;
       document.getElementById("fx-eur").textContent = phpEUR || "—";
       document.getElementById("fx-jpy").textContent = phpJPY || "—";
       document.getElementById("fx-sgd").textContent = phpSGD || "—";
-      document.getElementById("fx-usd-chg").textContent = "USD/PHP";
-      document.getElementById("fx-eur-chg").textContent = "EUR/PHP";
-      document.getElementById("fx-jpy-chg").textContent = "JPY/PHP";
-      document.getElementById("fx-sgd-chg").textContent = "SGD/PHP";
+      document.getElementById("fx-gbp").textContent = phpGBP || "—";
+      document.getElementById("fx-cny").textContent = phpCNY || "—";
+      document.getElementById("fx-usd-chg").textContent = "1 USD = PHP";
+      document.getElementById("fx-eur-chg").textContent = "1 EUR = PHP";
+      document.getElementById("fx-jpy-chg").textContent = "1 JPY = PHP";
+      document.getElementById("fx-sgd-chg").textContent = "1 SGD = PHP";
+      document.getElementById("fx-gbp-chg").textContent = "1 GBP = PHP";
+      document.getElementById("fx-cny-chg").textContent = "1 CNY = PHP";
     }
   } catch(e) {
     // Fallback static rates
-    document.getElementById("fx-usd").textContent = "56.82";
-    document.getElementById("fx-usd-chg").textContent = "BSP reference";
+    document.getElementById("fx-usd").textContent = "59.92";
+    document.getElementById("fx-eur").textContent = "69.99";
+    document.getElementById("fx-jpy").textContent = "0.3753";
+    document.getElementById("fx-sgd").textContent = "46.93";
+    document.getElementById("fx-gbp").textContent = "80.34";
+    document.getElementById("fx-cny").textContent = "8.76";
+    document.getElementById("fx-usd-chg").textContent = "1 USD = PHP";
+    document.getElementById("fx-eur-chg").textContent = "1 EUR = PHP";
+    document.getElementById("fx-jpy-chg").textContent = "1 JPY = PHP";
+    document.getElementById("fx-sgd-chg").textContent = "1 SGD = PHP";
+    document.getElementById("fx-gbp-chg").textContent = "1 GBP = PHP";
+    document.getElementById("fx-cny-chg").textContent = "1 CNY = PHP";
   }
 }
 
@@ -369,7 +387,7 @@ async function loadAll() {
   // Fetch live FX
   fetchFX();
 
-  // Fetch PSEi + PHP/USD from proxy
+  // Fetch PSEi + USD/PHP from proxy
   updateHeaderLive();
   fetchPSEiIndex();
 
@@ -389,7 +407,7 @@ async function fetchPSEiIndex() {
   } catch {}
 }
 
-// Fetch live PHP/USD from proxy
+// Fetch live USD/PHP from proxy
 async function updateHeaderLive() {
   try {
     const r = await fetch(\`\${PROXY}/?type=fx\`);
@@ -592,7 +610,7 @@ const AI_RESP={
   "PSEi technical outlook":"PSEi testing resistance at 6,850. RSI daily ~58 — not overbought. Support 6,750. Breadth improving. Watch BSP May 15 meeting for direction. Demo data — prices are illustrative.",
   "BSP rate impact":"BSP hold at 6.50% is mildly positive for equities. Banks (BDO,BPI) benefit from NIM stability. Property (ALI,SMPH) pressured by high mortgage rates. Utilities (MER) relatively insulated.",
   "OFW remittances":"OFW remittances $3.42B Jan 2026 (+8.2% YoY) — structural tailwind for consumer names: JFC, URC, telco (GLO, TEL). Consumer spend proxies on PSE.",
-  "PHP/USD forecast":"PHP/USD bias: range-bound 55.80–57.20. BSP gross reserves $108.2B (Feb 2026) — adequate buffer. BSP easing expected H2 2026 could weaken peso further.",
+  "USD/PHP forecast":"USD/PHP bias: range-bound 55.80–57.20. BSP gross reserves $108.2B (Feb 2026) — adequate buffer. BSP easing expected H2 2026 could weaken peso further.",
   "Property sector deep dive":"ALI Q1 beat +12% NI YoY. Take-up soft due to high mortgage rates (10Y BVAL 6.83%). SMPH defensive with diversified revenue. P/NAV 0.9x — below historical fair value.",
 };
 
