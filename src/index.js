@@ -458,7 +458,7 @@ export default {
         const res = await fetch("https://open.er-api.com/v6/latest/USD");
         const d = await res.json();
         const rates = d.rates || {};
-        const phpUSD = rates.PHP ? (1 / rates.PHP).toFixed(4) : null;
+        const phpUSD = rates.PHP ? rates.PHP.toFixed(4) : null;
         if (phpUSD) return json({ source: "open.er-api.com", PHPUSD: parseFloat(phpUSD) });
       } catch {}
       return json({ source: "demo", PHPUSD: 56.82 });
