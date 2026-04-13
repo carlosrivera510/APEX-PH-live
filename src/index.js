@@ -18,6 +18,7 @@ import { HTML_CONTENT } from './_html_content.js';
 
 // ── PSE Edge ticker → company ID mapping (pre-built for speed) ─────────────────
 const PSE_TICKER_IDS = {
+  // === Top / Blue Chip ===
   "SM":    { id: "599", name: "SM Investments Corporation" },
   "ALI":   { id: "180", name: "Ayala Land, Inc." },
   "BDO":   { id: "260", name: "BDO Unibank, Inc." },
@@ -45,6 +46,90 @@ const PSE_TICKER_IDS = {
   "CNPF":  { id: "652", name: "Century Pacific Food, Inc." },
   "UBP":   { id: "167", name: "Union Bank of the Philippines" },
   "CHP":   { id: "655", name: "Crown Equities, Inc." },
+
+  // === Banking ===
+  "MBT":   { id: "119", name: "Metropolitan Bank and Trust Company" },
+  "PNB":   { id: "89",  name: "Philippine National Bank" },
+  "SECB":  { id: "78",  name: "Security Bank Corporation" },
+  "RCB":   { id: "67",  name: "Rizal Commercial Banking Corporation" },
+  "DBP":   { id: "183", name: "Development Bank of the Philippines" },
+  "LTG":   { id: "108", name: "LT Group, Inc." },
+
+  // === Conglomerates / Holding Firms ===
+  "GTCAP": { id: "665", name: "GT Capital Holdings, Inc." },
+  "JGS":   { id: "84",  name: "JG Summit Holdings, Inc." },
+  "LPZ":   { id: "103", name: "Lopez Holdings Corporation" },
+  "MPI":   { id: "113", name: "Metro Pacific Investments Corporation" },
+  "AGI":   { id: "630", name: "Alliance Global Group, Inc." },
+  "RLC":   { id: "151", name: "Robinsons Land Corporation" },
+  "CHI":   { id: "620", name: "Cathay International Holdings, Inc." },
+
+  // === Real Estate ===
+  "FLI":   { id: "644", name: "Filinvest Land, Inc." },
+  "VLL":   { id: "635", name: "Vista Land and Lifescapes, Inc." },
+  "ROCK":  { id: "151", name: "Rockwell Land Corporation" },
+  "ELTV":  { id: "686", name: "Estate 1950 Venture, Inc." },
+  "MREIT": { id: "685", name: "Megaworld REIT, Inc." },
+  "AREIT": { id: "688", name: "AREIT, Inc." },
+  "RLT":   { id: "689", name: "RLC REIT Corp." },
+  "CLII":  { id: "682", name: "Crown Landmark Realty, Inc." },
+  "MPC":   { id: "616", name: "Macquarie Philippine Holdings Corp." },
+  "HLCM":  { id: "80",  name: "Holcim Philippines, Inc." },
+  "CHIB":  { id: "183", name: "China Banking Corporation" },
+
+  // === Gaming / Entertainment ===
+  "BLOOM": { id: "628", name: "Bloomberry Resorts Corporation" },
+  "MCP":   { id: "658", name: "Melco Resorts and Entertainment (Philippines) Corporation" },
+  "PLM":   { id: "663", name: "Premium Leisure Corporation" },
+  "GEAS":  { id: "611", name: "Pacific Online Systems Corporation" },
+
+  // === Utilities / Energy ===
+  "FGEN":  { id: "646", name: "First Gen Corporation" },
+  "EDC":   { id: "641", name: "Energy Development Corporation" },
+  "ACEN":  { id: "696", name: "ACEN Corporation" },
+  "SMC":   { id: "545", name: "San Miguel Corporation" },
+  "SMC2C": { id: "546", name: "SMC Bulk Water Group, Inc." },
+
+  // === Food & Consumer ===
+  "DM":    { id: "183", name: "Del Monte Philippines, Inc." },
+  "DFC":   { id: "182", name: "Dole Philippines, Inc." },
+  "JOLLIBEE": { id: "86", name: "Jollibee Foods Corporation" },
+  "LC":    { id: "106", name: "Lotte Philippines Corporation" },
+  "FMIC":  { id: "65",  name: "First Metro Investment Corporation" },
+
+  // === Logistics / Transport ===
+  "LBC":   { id: "678", name: "LBC Express Holdings, Inc." },
+  "APX":   { id: "676", name: "AirAsia Philippines, Inc." },
+  "GOV":   { id: "611", name: "G Raven Entertainment Holdings, Inc." },
+
+  // === Industrial / Manufacturing ===
+  "FNI":   { id: "64",  name: "First Nickels, Inc." },
+  "HI":    { id: "76",  name: "Havenbrook Holdings, Inc." },
+  "ISM":   { id: "87",  name: "ISM Communications Corporation" },
+  "MAC":   { id: "109", name: "MacroAsia Corporation" },
+  "PXP":   { id: "139", name: "PXP Energy Corporation" },
+  "SLI":   { id: "158", name: "SL Agritech Corporation" },
+  "GMA7":  { id: "71",  name: "GMA Network, Inc." },
+  "TV":    { id: "115", name: "TV5 Network, Inc." },
+  "PNN":   { id: "133", name: "Pilmico Foods Corporation" },
+
+  // === REITs ===
+  "ALHP":  { id: "687", name: "AyalaLand Logistics Holdings Corp." },
+  "CREIT": { id: "684", name: "CityMall Commercial REIT, Inc." },
+  "DPR":   { id: "681", name: "Davao Premium REIT, Inc." },
+  "FR":    { id: "682", name: "Filinvest REIT Corp." },
+  "HH":    { id: "689", name: "Hinayan Holdings, Inc." },
+
+  // === Mining ===
+  "LIB":   { id: "104", name: "Lepanto Consolidated Mining Company" },
+  "LX":    { id: "107", name: "Lopez Mining Holdings, Inc." },
+  "NI":    { id: "125", name: "Nickel Asia Corporation" },
+  "FX":    { id: "70",  name: "Philex Mining Corporation" },
+
+  // === Technology / Telecom ===
+  "APL":   { id: "19",  name: "Atlas Consolidated Mining and Development Corporation" },
+  "CNN":   { id: "53",  name: "Crown Equities, Inc." },
+  "GRRN":  { id: "676", name: "Green Planet Group Holdings, Inc." },
 };
 
 // PSE tickers that need .PS suffix for Yahoo Finance
