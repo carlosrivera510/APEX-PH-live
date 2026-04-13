@@ -179,7 +179,7 @@ html,body{overflow-y:auto!important;height:auto!important}
     <div class="panel" style="flex:1;min-height:200px;display:flex;flex-direction:column"><div class="panel-hdr"><div class="dot"></div>PSE WATCHLIST</div><div class="panel-body" id="wl-body" style="overflow-y:auto;flex:1;min-height:0px"></div></div>
     <div class="panel" style="height:130px;flex-shrink:0"><div class="panel-hdr"><div class="dot"></div>FX RATES</div><div class="panel-body"><div class="fx-grid"><div class="card"><div class="lbl">USD/PHP</div><div class="val" id="fx-usd">—</div><div class="sub" id="fx-usd-chg">—</div></div><div class="card"><div class="lbl">EUR/PHP</div><div class="val" id="fx-eur">—</div><div class="sub" id="fx-eur-chg">—</div></div><div class="card"><div class="lbl">JPY/PHP</div><div class="val" id="fx-jpy">—</div><div class="sub" id="fx-jpy-chg">—</div></div><div class="card"><div class="lbl">SGD/PHP</div><div class="val" id="fx-sgd">—</div><div class="sub" id="fx-sgd-chg">—</div></div>
 <div class="card"><div class="lbl">GBP/PHP</div><div class="val" id="fx-gbp">—</div><div class="sub" id="fx-gbp-chg">—</div></div>
-<div class="card"><div class="lbl">AUD/PHP</div><div class="val" id="fx-aud">—</div><div class="sub" id="fx-aud-chg">—</div></div></div></div>
+<div class="card"><div class="lbl">CNY/PHP</div><div class="val" id="fx-cny">—</div><div class="sub" id="fx-cny-chg">—</div></div></div></div>
     <div class="panel" style="height:120px;flex-shrink:0"><div class="panel-hdr"><div class="dot"></div>MARKET BREADTH</div><div class="panel-body"><div class="bread-row"><div class="lbl">Advances</div><div class="v up" id="br-adv">—</div></div><div class="bread-row"><div class="lbl">Declines</div><div class="v dn" id="br-dec">—</div></div><div class="bread-row"><div class="lbl">Unchanged</div><div class="v" id="br-unch">—</div></div><div class="bread-bar"><div class="adv" id="br-adv-bar" style="width:50%"></div><div class="dec" id="br-dec-bar" style="width:33%"></div><div class="unch" id="br-unch-bar" style="width:17%"></div></div></div></div>
   </div>
   <div style="display:flex;flex-direction:column;gap:6px">
@@ -280,25 +280,25 @@ async function fetchFX() {
     const r = await fetch("https://open.er-api.com/v6/latest/USD");
     const d = await r.json();
     const rates = d.rates || {};
-    const phpUSD = rates.PHP ? (1/rates.PHP).toFixed(4) : null;
-    const phpEUR = rates.PHP && rates.EUR ? (rates.EUR/rates.PHP).toFixed(4) : null;
-    const phpJPY = rates.PHP && rates.JPY ? (rates.JPY/rates.PHP).toFixed(4) : null;
-    const phpSGD = rates.PHP && rates.SGD ? (rates.SGD/rates.PHP).toFixed(4) : null;
-    const phpGBP = rates.PHP && rates.GBP ? (rates.GBP/rates.PHP).toFixed(4) : null;
-    const phpAUD = rates.PHP && rates.AUD ? (rates.AUD/rates.PHP).toFixed(4) : null;
+    const phpUSD = rates.PHP ? rates.PHP.toFixed(4) : null;
+    const phpEUR = rates.PHP && rates.EUR ? (rates.EUR/rates.USD).toFixed(4) : null;
+    const phpJPY = rates.PHP && rates.JPY ? (rates.JPY/rates.USD).toFixed(4) : null;
+    const phpSGD = rates.PHP && rates.SGD ? (rates.SGD/rates.USD).toFixed(4) : null;
+    const phpGBP = rates.PHP && rates.GBP ? (rates.GBP/rates.USD).toFixed(4) : null;
+    const phpCNY = rates.PHP && rates.CNY ? (rates.CNY/rates.USD).toFixed(4) : null;
     if (phpUSD) {
       document.getElementById("fx-usd").textContent = phpUSD;
       document.getElementById("fx-eur").textContent = phpEUR || "—";
       document.getElementById("fx-jpy").textContent = phpJPY || "—";
       document.getElementById("fx-sgd").textContent = phpSGD || "—";
       document.getElementById("fx-gbp").textContent = phpGBP || "—";
-      document.getElementById("fx-aud").textContent = phpAUD || "—";
-      document.getElementById("fx-usd-chg").textContent = "USD base";
-      document.getElementById("fx-eur-chg").textContent = "EUR/PHP";
-      document.getElementById("fx-jpy-chg").textContent = "JPY/PHP";
-      document.getElementById("fx-sgd-chg").textContent = "SGD/PHP";
-      document.getElementById("fx-gbp-chg").textContent = "GBP/PHP";
-      document.getElementById("fx-aud-chg").textContent = "AUD/PHP";
+      document.getElementById("fx-cny").textContent = phpCNY || "—";
+      document.getElementById("fx-usd-chg").textContent = "1 USD = PHP";
+      document.getElementById("fx-eur-chg").textContent = "1 EUR = PHP";
+      document.getElementById("fx-jpy-chg").textContent = "1 JPY = PHP";
+      document.getElementById("fx-sgd-chg").textContent = "1 SGD = PHP";
+      document.getElementById("fx-gbp-chg").textContent = "1 GBP = PHP";
+      document.getElementById("fx-cny-chg").textContent = "1 CNY = PHP";
     }
   } catch(e) {
     // Fallback static rates
@@ -307,13 +307,13 @@ async function fetchFX() {
     document.getElementById("fx-jpy").textContent = "0.38";
     document.getElementById("fx-sgd").textContent = "42.80";
     document.getElementById("fx-gbp").textContent = "73.20";
-    document.getElementById("fx-aud").textContent = "37.50";
+    document.getElementById("fx-cny").textContent = "7.82";
     document.getElementById("fx-usd-chg").textContent = "BSP reference";
     document.getElementById("fx-eur-chg").textContent = "BSP reference";
     document.getElementById("fx-jpy-chg").textContent = "BSP reference";
     document.getElementById("fx-sgd-chg").textContent = "BSP reference";
     document.getElementById("fx-gbp-chg").textContent = "BSP reference";
-    document.getElementById("fx-aud-chg").textContent = "BSP reference";
+    document.getElementById("fx-cny-chg").textContent = "BSP reference";
   }
 }
 
