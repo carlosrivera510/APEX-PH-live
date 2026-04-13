@@ -280,12 +280,12 @@ async function fetchFX() {
     const r = await fetch("https://open.er-api.com/v6/latest/USD");
     const d = await r.json();
     const rates = d.rates || {};
-    const phpUSD = rates.PHP ? rates.PHP.toFixed(4) : null;
-    const phpEUR = rates.PHP && rates.EUR ? (rates.EUR/rates.USD).toFixed(4) : null;
-    const phpJPY = rates.PHP && rates.JPY ? (rates.JPY/rates.USD).toFixed(4) : null;
-    const phpSGD = rates.PHP && rates.SGD ? (rates.SGD/rates.USD).toFixed(4) : null;
-    const phpGBP = rates.PHP && rates.GBP ? (rates.GBP/rates.USD).toFixed(4) : null;
-    const phpCNY = rates.PHP && rates.CNY ? (rates.CNY/rates.USD).toFixed(4) : null;
+      const phpUSD = rates.PHP ? rates.PHP.toFixed(4) : null;
+      const phpEUR = rates.PHP && rates.EUR ? (rates.EUR/rates.PHP).toFixed(4) : null;
+      const phpJPY = rates.PHP && rates.JPY ? (rates.JPY/rates.PHP).toFixed(4) : null;
+      const phpSGD = rates.PHP && rates.SGD ? (rates.SGD/rates.PHP).toFixed(4) : null;
+      const phpGBP = rates.PHP && rates.GBP ? (rates.GBP/rates.PHP).toFixed(4) : null;
+      const phpCNY = rates.PHP && rates.CNY ? (rates.CNY/rates.PHP).toFixed(4) : null;
     if (phpUSD) {
       document.getElementById("fx-usd").textContent = phpUSD;
       document.getElementById("fx-eur").textContent = phpEUR || "—";
