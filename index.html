@@ -170,7 +170,7 @@ html,body{overflow-y:auto!important;height:auto!important}
 <div class="header">
   <div class="logo">APEX PH</div>
   <div class="tagline">Philippine Capital Markets</div>
-  <div class="search-bar"><input id="srch" placeholder="Ticker (e.g. GLO, ALI)"><button onclick="doSearch()">SEARCH</button></div>
+  <div class="search-bar"><input id="srch" placeholder="Ticker (e.g. SM, FLI, RCR, AEV...)"><button onclick="doSearch()">SEARCH</button></div>
   <div class="status-bar"><div>PSEi <span class="v" id="h-psi">—</span></div><div>USD/PHP <span class="v" id="h-phpx">—</span></div><div>BSP <span class="v">6.50%</span></div><div id="data-badge" style="color:#ff8c00;font-size:9px;border:1px solid #ff8c00;padding:1px 5px;border-radius:3px">DEMO</div></div>
 </div>
 <div class="ticker-wrap"><div class="ticker" id="ticker"><span style="color:#555">Loading market data...</span></div></div>
@@ -206,7 +206,7 @@ html,body{overflow-y:auto!important;height:auto!important}
   <div class="ai-msgs" id="ai-msgs"><div class="ai-msg"><div class="role">APEX Analyst</div><div class="text">APEX PH is live — demo data for demonstration purposes. Stock prices shown are illustrative. Use the quick buttons below or type a command in the bar below. Try PSEI, FX, or BSP.</div></div></div>
   <div class="ai-input-row"><input class="ai-input" id="ai-input" placeholder="Ask about PSE stocks, macro, sectors..."><button class="ai-send" id="ai-send">SEND</button></div>
 </div>
-<div class="cmd-bar"><div class="prompt">CMD &gt;</div><input id="cmd-input" placeholder="Type PSEI, BSP, MACRO, FX or any ticker..."></div>
+<div class="cmd-bar"><div class="prompt">CMD &gt;</div><input id="cmd-input" placeholder="PSEi, BSP, FX, or any PSE ticker (e.g. FLI, RCR, AEV...)..."></div>
 
 <!-- Stock Page Overlay -->
 <div id="sp-overlay">
@@ -228,30 +228,38 @@ const PROXY = "https://apex-ph-proxy.cjcr01.workers.dev";
 // On page load, these prices are displayed immediately and replaced with
 // live data from /?type=bulk once the proxy API responds.
 const STOCKS = [
-  {sym:"SM",    name:"SM Investments Corp",          seed:621.00, chg: -0.4, seedVol:421660},
-  {sym:"ALI",   name:"Ayala Land Inc",               seed: 18.08, chg: -1.74,seedVol:22797200},
-  {sym:"BDO",   name:"BDO Unibank Inc",              seed:122.80, chg: -0.24,seedVol:3322590},
-  {sym:"JFC",   name:"Jollibee Foods Corp",           seed:169.50, chg: -1.74,seedVol:2083130},
-  {sym:"TEL",   name:"PLDT Inc",                     seed:1300.00,chg:  0.78,seedVol: null},
-  {sym:"MER",   name:"Meralco",                      seed:608.50, chg: -0.33,seedVol: null},
-  {sym:"AC",    name:"Ayala Corp",                   seed:543.00, chg:  0.46,seedVol: null},
-  {sym:"BPI",   name:"Bank of the Philippine Islands",seed:101.40, chg: -2.59,seedVol: null},
-  {sym:"URC",   name:"Universal Robina Corp",         seed: 62.00, chg: -0.8, seedVol: null},
-  {sym:"SMPH",  name:"SM Prime Holdings Inc",         seed: 20.40, chg: -2.86,seedVol: null},
-  {sym:"GLO",   name:"Globe Telecom Inc",             seed:1650.00,chg: -0.06,seedVol: 27790},
-  {sym:"ICT",   name:"International Container Terminal",seed:720.00,chg:  3.0, seedVol: null},
-  {sym:"CEB",   name:"Cebu Air Inc",                 seed: 33.50, chg:  5.18,seedVol: 607100},
-  {sym:"2GO",   name:"2GO Group Inc",                seed:  1.70, chg:  null,seedVol: null},
-  {sym:"DMC",   name:"DMCI Holdings Inc",            seed: 10.22, chg:   0.2,seedVol: null},
-  {sym:"SCC",   name:"Semirara Mining & Power",      seed: 30.05, chg:  0.17,seedVol: null},
-  {sym:"MONDE", name:"Monde Nissin Corp",            seed:  6.67, chg: -0.45,seedVol: null},
-  {sym:"CNVRG", name:"Converge ICT Solutions",        seed: 12.50, chg:  1.3, seedVol: null},
-  {sym:"DDMPR", name:"DDMP REIT Corp",               seed:  1.06, chg:  0.95,seedVol: null},
-  {sym:"PLUS",  name:"DigiPlus Corp",                seed: 16.80, chg: -0.94,seedVol: null},
+  {sym:"SM",    name:"SM Investments Corp",          seed:621.00, chg: -0.4,  seedVol:421660},
+  {sym:"ALI",   name:"Ayala Land Inc",               seed: 18.08, chg: -1.74, seedVol:22797200},
+  {sym:"BDO",   name:"BDO Unibank Inc",              seed:122.80, chg: -0.24, seedVol:3322590},
+  {sym:"JFC",   name:"Jollibee Foods Corp",          seed:169.50, chg: -1.74, seedVol:2083130},
+  {sym:"TEL",   name:"PLDT Inc",                     seed:1300.00,chg:  0.78, seedVol: null},
+  {sym:"MER",   name:"Meralco",                      seed:608.50, chg: -0.33, seedVol: null},
+  {sym:"AC",    name:"Ayala Corp",                   seed:543.00, chg:  0.46, seedVol: null},
+  {sym:"BPI",   name:"Bank of the Philippine Islands",seed:101.40, chg: -2.59, seedVol: null},
+  {sym:"URC",   name:"Universal Robina Corp",        seed: 62.00, chg: -0.8,  seedVol: null},
+  {sym:"SMPH",  name:"SM Prime Holdings Inc",        seed: 20.40, chg: -2.86, seedVol: null},
+  {sym:"GLO",   name:"Globe Telecom Inc",            seed:1650.00,chg: -0.06, seedVol: 27790},
+  {sym:"ICT",   name:"International Container Terminal",seed:720.00,chg:  3.0,  seedVol: null},
+  {sym:"CEB",   name:"Cebu Air Inc",                 seed: 33.50, chg:  5.18, seedVol: 607100},
+  {sym:"2GO",   name:"2GO Group Inc",                seed:  1.70, chg:  null, seedVol: null},
+  {sym:"DMC",   name:"DMCI Holdings Inc",            seed: 10.22, chg:  0.2,  seedVol: null},
+  {sym:"SCC",   name:"Semirara Mining & Power",      seed: 30.05, chg:  0.17, seedVol: null},
+  {sym:"MONDE", name:"Monde Nissin Corp",            seed:  6.67, chg: -0.45, seedVol: null},
+  {sym:"CNVRG", name:"Converge ICT Solutions",       seed: 12.50, chg:  1.3,  seedVol: null},
+  {sym:"DDMPR", name:"DDMP REIT Corp",              seed:  1.06, chg:  0.95, seedVol: null},
+  {sym:"PLUS",  name:"DigiPlus Corp",                seed: 16.80, chg: -0.94, seedVol: null},
+  {sym:"AP",    name:"Aboitiz Power Corp",           seed: 44.70, chg: -3.25, seedVol: null},
+  {sym:"AEV",   name:"Aboitiz Equity Ventures",     seed: 29.80, chg: -1.49, seedVol: null},
+  {sym:"FLI",   name:"Filinvest Land Inc",           seed:  0.75, chg:  1.35, seedVol: null},
+  {sym:"RCR",   name:"RL Commercial REIT Inc",      seed:  6.90, chg: -0.72, seedVol: null},
+  {sym:"NOW",   name:"NOW Corporation",              seed:  0.56, chg:  1.82, seedVol: null},
+  {sym:"CNPF",  name:"Century Pacific Food Inc",     seed: 32.20, chg: -3.3,  seedVol: null},
+  {sym:"UBP",   name:"Union Bank of the Phils",      seed: 24.75, chg:  0.81, seedVol: null},
 ];
 const KEYSTOCKS = [
-  {sym:"CEB",name:"Cebu Air"},{sym:"PLUS",name:"DigiPlus"},
-  {sym:"2GO",name:"2GO Group"},{sym:"DMC",name:"DMCI Holdings"},{sym:"SCC",name:"Semirara Mining"},
+  {sym:"FLI",name:"Filinvest Land"},{sym:"RCR",name:"RL Commercial REIT"},
+  {sym:"NOW",name:"NOW Corp"},{sym:"CNPF",name:"Century Pacific Food"},
+  {sym:"UBP",name:"Union Bank"},
 ];
 const BONDS = [
   {t:"91D T-Bill",y:"5.95"},{t:"182D T-Bill",y:"6.10"},{t:"364D T-Bill",y:"6.28"},
@@ -592,9 +600,9 @@ async function showStockPage(sym){
     <div class="sp-card"><div class="sp-lbl">Day High</div><div class="sp-val up">${high?fmtP(high):"—"}</div></div>
     <div class="sp-card"><div class="sp-lbl">Day Low</div><div class="sp-val dn">${low?fmtP(low):"—"}</div></div>
     <div class="sp-card"><div class="sp-lbl">Volume</div><div class="sp-val">${vol?Number(vol).toLocaleString():"—"}</div></div>
-    <div class="sp-card"><div class="sp-lbl">Source</div><div class="sp-val">${source === "yahoo_finance" ? "Yahoo Finance" : source === "demo" ? "Demo Data" : "Unavailable"}</div></div>
+    <div class="sp-card"><div class="sp-lbl">Source</div><div class="sp-val">${source==="pse_edge"?"PSE Edge":source==="yahoo_finance"?"Yahoo Finance":source==="demo"?"Demo Data":"Unavailable"}</div></div>
   `;
-  document.getElementById("sp-desc").innerHTML=`<strong>${sym}</strong> — <span style="color:${source==="yahoo_finance"?"#00e676":source==="demo"?"#ff8c00":"#f44"}">${source.toUpperCase()}</span>. ${source==="demo"?"This ticker is shown as demo data because Yahoo Finance is rate-limiting or does not have coverage for this PSE stock.":source==="yahoo_finance"?"Live data from Yahoo Finance. Prices may be delayed.":""}`;
+  document.getElementById("sp-desc").innerHTML=`<strong>${sym}</strong> — <span style="color:${source==="yahoo_finance"?"#00e676":source==="demo"?"#ff8c00":source==="pse_edge"?"#00e676":"#f44"}">${source.toUpperCase()}</span>. ${source==="demo"?"Ticker shown as demo data — Yahoo Finance may not have coverage for this PSE stock. Try searching PSE Edge directly.":source==="yahoo_finance"?"Live data from Yahoo Finance. Prices may be delayed.":source==="pse_edge"?"Live data from PSE Edge.":"No live data available for this ticker on PSE Edge or Yahoo Finance."}`;
 
   // Candle chart using demo-ish data
   if(price > 0){
